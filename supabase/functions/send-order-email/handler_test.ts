@@ -32,7 +32,7 @@ const order = (extra: Record<string, unknown> = {}) => ({
     customer_email: "buyer@example.com", payment_method: "cod", status: "pending", payment_status: "unpaid", subtotal: 100, shipping_fee: 0, total: 100,
     items: [{ name: "<b>Laser</b>", qty: "<svg onload=1>", price: 100 }], ...extra },
 });
-const ADMIN = { tok: { id: "u1", email: "beauty@admin.com" } };
+const ADMIN = { tok: { id: "u1", email: "beauty@admin.com", app_metadata: { role: "admin" } } };
 
 Deno.test("rejects unknown event and bad id", async () => {
   const { d } = mk();
@@ -40,8 +40,8 @@ Deno.test("rejects unknown event and bad id", async () => {
   assertEquals((await handle(d, { event: "order_created", id: "o1');drop" }, null)).status, 400);
 });
 
-Deno.test("admin-only events reject anon and non-admin users", async () => {
-  const { d } = mk({ users: { u: { id: "u2", email: "someone@example.com" } } });
+Deno.test("admin-only events reject anon, non-admin users, and email-only 'admins'", async () => {
+  const { d } = mk({ users: { u: { id: "u2", email: "admin@beautylife.com" } } });
   for (const ev of ["health", "test", "order_status", "payment_paid", "payment_refunded"]) {
     assertEquals((await handle(d, { event: ev, id: "o1" }, null)).status, 403, ev);
     assertEquals((await handle(d, { event: ev, id: "o1" }, "u")).status, 403, ev);

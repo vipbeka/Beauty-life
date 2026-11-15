@@ -71,6 +71,8 @@ const deps: Deps = {
     return !error;
   },
   async getUser(jwt) {
+    // Internal server-to-server calls (create-checkout, payment webhooks) use the service-role key.
+    if (jwt && jwt === SERVICE_KEY) return { id: "service_role", app_metadata: { role: "admin" } };
     const { data, error } = await db.auth.getUser(jwt);
     if (error || !data?.user) return null;
     return { id: data.user.id, email: data.user.email ?? undefined, app_metadata: data.user.app_metadata };

@@ -53,8 +53,9 @@ async function resolveAdmin(d: Deps, jwt: string | null): Promise<User | null> {
   if (!u) return null;
   if (u.app_metadata && u.app_metadata.role === "admin") return u;
   if (await d.isAdminUserId(u.id).catch(() => false)) return u;
-  const allow = (d.env("ADMIN_EMAILS") ?? "beauty@admin.com,admin@beautylife.com")
-    .split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
+  // Optional explicit allowlist (secret ADMIN_EMAILS). No default: an email alone is not proof of
+  // admin rights (an unregistered address could be signed up by anyone).
+  const allow = (d.env("ADMIN_EMAILS") ?? "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
   return u.email && allow.includes(u.email.toLowerCase()) ? u : null;
 }
 

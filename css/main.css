@@ -1121,3 +1121,13 @@ body.page-locked{overflow:hidden!important;}
 .hero-stats[hidden],.wa-float[hidden],.nav-phone[hidden],.top-announce[hidden]{display:none!important;}
 @keyframes blSk{0%{background-position:100% 0}100%{background-position:-100% 0}}
 @media (prefers-reduced-motion:reduce){.sk:empty,.hero-stats.sk-block:empty{animation:none;}}
+
+/* ===== Checkout v2 (js/checkout-v2.js) — same tiles, brand tokens ===== */
+.bl-v2-hidden{display:none!important;}
+.pay-methods.bl-pay-v2{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+.bl-pay-secure{margin:-4px 0 12px;color:var(--navy-800);font-weight:700;}
+.bl-pay-secure i{color:var(--success);}
+.bl-pay-note{background:var(--navy-50);border:1px solid var(--navy-100);color:var(--navy-900);border-radius:var(--radius);padding:12px 14px;font-weight:700;margin-bottom:12px;}
+.bl-sandbox-chip{display:inline-flex;align-items:center;gap:6px;background:var(--gold-100);color:var(--gold-700);border:1px solid var(--gold-400);border-radius:999px;padding:4px 12px;font-size:.8rem;font-weight:800;margin-bottom:10px;}
+.bl-transfer-box{margin:14px auto 4px;max-width:460px;text-align:start;}
+.bl-transfer-box .bank-row b{word-break:break-all;}
