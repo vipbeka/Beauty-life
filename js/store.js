@@ -101,34 +101,41 @@
     O = null,
     v = null,
     I = !1;
+  /* Admin check: server-side first (public.is_admin() RPC, backed by admin_users /
+     app_metadata.role). Falls back to the legacy email list ONLY if the RPC is not
+     deployed yet, so admin access never breaks during rollout. Real protection = RLS. */
+  let adminState = { uid: null, v: !1, t: 0 };
+  function lowerTrim(t) {
+    return String(t || "").toLowerCase().trim();
+  }
+  async function checkAdminFor(client, user) {
+    if (!client || !user) return !1;
+    if (adminState.uid === user.id && Date.now() - adminState.t < 6e4) return adminState.v;
+    let v;
+    try {
+      const r = await client.rpc("is_admin");
+      r && !r.error && "boolean" == typeof r.data && (v = r.data);
+    } catch (t) {}
+    if (void 0 === v) {
+      const list = Array.isArray(window.BL_ADMIN_EMAILS) ? window.BL_ADMIN_EMAILS : [];
+      v = -1 !== list.map(lowerTrim).indexOf(lowerTrim(user.email));
+    }
+    adminState = { uid: user.id, v: v, t: Date.now() };
+    return v;
+  }
+  window.BLAdminCheck = checkAdminFor;
   async function isCloudAdmin() {
     try {
       const client = l();
       if (!client || !client.auth) return !1;
       const session = await client.auth.getSession();
-      const email =
-        session &&
-        session.data &&
-        session.data.session &&
-        session.data.session.user &&
-        session.data.session.user.email;
-      if (!email) return !1;
-      const list = Array.isArray(window.BL_ADMIN_EMAILS)
-        ? window.BL_ADMIN_EMAILS
-        : [];
-      return (
-        list
-          .map(function (t) {
-            return String(t || "")
-              .toLowerCase()
-              .trim();
-          })
-          .indexOf(String(email).toLowerCase().trim()) !== -1
-      );
+      const user = session && session.data && session.data.session && session.data.session.user;
+      return user ? await checkAdminFor(client, user) : !1;
     } catch (t) {
       return !1;
     }
   }
+
   function purgeSensitiveCache() {
     [n, r, i, s, o].forEach(function (t) {
       try {
@@ -928,8 +935,82 @@
       m(a, T.testimonials),
       _("bl:testimonials-updated");
   }
+  /* Cart = product ids + qty. Price/name/image are always re-read from the
+     products table (single source of truth); stale localStorage snapshots are corrected. */
+  let cartRepriceNotified = !1;
   function dt() {
-    return g(d, []);
+    const c = g(d, []);
+    if (!Array.isArray(c)) return [];
+    if (!(T.products || []).length) return c;
+    let changed = !1;
+    const out = [];
+    c.forEach(function (it) {
+      if (!it) return void (changed = !0);
+      const p = Z(String(it.product_id || it.id || ""));
+      if (!p || !1 === p.is_active) return void (changed = !0);
+      const qty = Math.max(1, Math.floor(Number(it.qty) || 1)),
+        price = Number(p.price) || 0;
+      if (
+        Number(it.price) !== price ||
+        it.name !== p.name ||
+        (it.image_url || "") !== (p.image_url || "") ||
+        it.qty !== qty
+      ) {
+        changed = !0;
+        it = Object.assign({}, it, {
+          price: price,
+          name: p.name,
+          image_url: p.image_url || "",
+          qty: qty,
+        });
+      }
+      out.push(it);
+    });
+    if (changed) {
+      m(d, out);
+      cartRepriceNotified ||
+        ((cartRepriceNotified = !0),
+        setTimeout(function () {
+          cartRepriceNotified = !1;
+          _("bl:cart-repriced");
+          _("bl:cart-updated");
+        }, 0));
+    }
+    return out;
+  }
+  function quoteShipping(o) {
+    o = o || {};
+    const st = q(),
+      sub = Math.max(
+        0,
+        dt().reduce(function (t, e) {
+          return t + (e.price || 0) * (e.qty || 1);
+        }, 0) - Number(o.discount || 0),
+      );
+    if ("international" === o.shipType) {
+      const pct = !1 !== st.internationalShippingPercentEnabled,
+        rate = Number(st.internationalShippingTaxPercent || 0);
+      return pct && rate > 0
+        ? Math.round((sub * rate) / 100)
+        : Number(st.internationalShippingFee || 0);
+    }
+    if (
+      dt().some(function (e) {
+        return V(Z(String((e && (e.product_id || e.id || "")) || "")), "free_shipping");
+      })
+    )
+      return 0;
+    if (Number(st.freeShippingAbove || 0) > 0 && sub >= Number(st.freeShippingAbove))
+      return 0;
+    if ("custom" === (st.localShippingMode || "default")) {
+      const map =
+          st.localShippingByGovernorate && "object" == typeof st.localShippingByGovernorate
+            ? st.localShippingByGovernorate
+            : {},
+        gov = o.governorate || "";
+      if (gov && null != map[gov] && "" !== map[gov]) return Number(map[gov] || 0);
+    }
+    return Number(st.localShippingFee || 0);
   }
   function lt() {
     C().catch(function (t) {
@@ -1625,6 +1706,7 @@
       m(u, t);
     },
     getCart: dt,
+    quoteShipping: quoteShipping,
     saveCart: function (t) {
       m(d, t), _("bl:cart-updated");
     },

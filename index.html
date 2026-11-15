@@ -46,7 +46,6 @@
     "image": "https://beautylife-eg.com/assets/company-logo.png",
     "description": "أجهزة طبية أصلية للتجميل والعلاج الطبيعي للعيادات ومراكز التجميل في مصر.",
     "areaServed": "EG",
-    "telephone": "+201000000000",
     "priceRange": "$$",
     "sameAs": []
   }
@@ -94,7 +93,7 @@
   </script>
 
 <!-- ===== Top Announcement ===== -->
-<div class="top-announce" id="topAnnounce"><i class="fas fa-truck-fast"></i> <span id="announceText"> 0 </span></div>
+<div class="top-announce" id="topAnnounce"><i class="fas fa-truck-fast"></i> <span id="announceText" class="sk"></span></div>
 
 <!-- ===== Ticker ===== -->
 <div class="ticker" id="tickerBar">
@@ -118,7 +117,7 @@
       <a href="index.html#consult" class="nav-link"><i class="fas fa-stethoscope"></i> استشارة مجانية</a>
     </div>
     <div class="nav-actions">
-      <a href="#" class="nav-phone" id="navPhone"><i class="fas fa-phone-volume"></i> <span>01000000000</span></a>
+      <a href="#" class="nav-phone" id="navPhone"><i class="fas fa-phone-volume"></i> <span></span></a>
       <button type="button" class="icon-btn nav-cart-button" onclick="openCart()" aria-label="فتح سلة التسوق" aria-haspopup="dialog">
         <i class="fas fa-cart-shopping"></i>
         <span class="cart-badge" id="cartBadge" aria-live="polite">0</span>
@@ -139,11 +138,7 @@
         <a href="store.html" class="btn btn-gold btn-lg"><i class="fas fa-bag-shopping"></i> تسوق الأجهزة الآن</a>
         <a href="#consult" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,.4);color:#fff;"><i class="fas fa-stethoscope"></i> احجز استشارة مجانية</a>
       </div>
-      <div class="hero-stats">
-        <div class="hstat"><div class="hstat-num">+500</div><div class="hstat-label">عيادة ومركز يثق بنا</div></div>
-        <div class="hstat"><div class="hstat-num">+1200</div><div class="hstat-label">جهاز تم بيعه</div></div>
-        <div class="hstat"><div class="hstat-num">سنتان</div><div class="hstat-label">ضمان حقيقي</div></div>
-      </div>
+      <div class="hero-stats sk-block" aria-busy="true"></div>
     </div>
     <div class="hero-visual reveal reveal-d2">
       <div class="hero-card">
@@ -339,9 +334,9 @@
     <div>
       <h4>تواصل معنا</h4>
       <ul class="footer-contact">
-        <li><i class="fas fa-phone"></i> <span id="footPhone">01000000000</span></li>
-        <li><i class="fas fa-envelope"></i> <span id="footEmail">info@beautylife.com</span></li>
-        <li><i class="fas fa-location-dot"></i> <span id="footAddress">القاهرة، جمهورية مصر العربية</span></li>
+        <li><i class="fas fa-phone"></i> <span id="footPhone" class="sk"></span></li>
+        <li><i class="fas fa-envelope"></i> <span id="footEmail" class="sk"></span></li>
+        <li><i class="fas fa-location-dot"></i> <span id="footAddress" class="sk"></span></li>
         <li><i class="fas fa-clock"></i> يومياً من 10 صباحاً حتى 10 مساءً</li>
       </ul>
     </div>
@@ -526,6 +521,7 @@
   <script src="js/store.js"></script>
   <script src="js/payment.js"></script>
   <script src="js/app.js"></script>
+<script src="js/ssot.js"></script>
   <script src="js/advanced-features.js"></script>
   <script src="js/site-upgrade-v10.js?v=18"></script>
 <script src="js/notify-server.js"></script>
