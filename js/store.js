@@ -151,9 +151,10 @@
   async function C() {
     const admin = await isCloudAdmin();
     admin || purgeSensitiveCache(),
-      (T.categories = g(t, window.DEFAULT_CATEGORIES || [])),
-      (T.products = g(e, window.DEFAULT_PRODUCTS || [])),
-      (T.testimonials = g(a, window.DEFAULT_TESTIMONIALS || [])),
+      /* Never show built-in demo data: only the last real DB copy cached on this device. */
+      (T.categories = g(t, [])),
+      (T.products = g(e, [])),
+      (T.testimonials = g(a, [])),
       (T.settings = g(c, window.DEFAULT_SETTINGS || {})),
       (T.coupons = admin ? g(r, []) : []),
       (T.orders = admin ? g(n, []) : []),
@@ -161,6 +162,7 @@
       (T.consultations = admin ? g(s, []) : []),
       (T.warranty = admin ? g(o, []) : []);
     if (l()) {
+      cloudBooted = !0;
       (T.categories = []),
         (T.products = []),
         (T.testimonials = []),
@@ -179,22 +181,9 @@
         );
       }
     } else {
-      !T.categories.length &&
-        window.DEFAULT_CATEGORIES &&
-        (T.categories = window.DEFAULT_CATEGORIES),
-        !T.products.length &&
-          window.DEFAULT_PRODUCTS &&
-          (T.products = window.DEFAULT_PRODUCTS),
-        !T.testimonials.length &&
-          window.DEFAULT_TESTIMONIALS &&
-          (T.testimonials = window.DEFAULT_TESTIMONIALS),
-        !Object.keys(T.settings || {}).length &&
-          window.DEFAULT_SETTINGS &&
-          (T.settings = window.DEFAULT_SETTINGS),
-        m(t, T.categories),
-        m(e, T.products),
-        m(a, T.testimonials),
-        m(c, T.settings);
+      /* Offline (SDK blocked/failed): keep the cached real data as-is — no demo seeding,
+         nothing written back, so the next online visit is not polluted. */
+      console.warn("[BL] Database not reachable yet — showing last cached data only.");
     }
     (function () {
       if (window.SB && window.SB.bc)
@@ -1012,9 +1001,22 @@
     }
     return Number(st.localShippingFee || 0);
   }
+  let cloudBooted = !1;
   function lt() {
-    C().catch(function (t) {
-      console.error("[BL] bootstrap error:", t);
+    /* Wait for supabase-init (sb:ready) so we never boot in offline/demo mode just because the
+       SDK script was still loading (slow networks, in-app Android browsers). */
+    let started = !1;
+    const go = function () {
+      if (started) return;
+      started = !0;
+      C().catch(function (t) {
+        console.error("[BL] bootstrap error:", t);
+      });
+    };
+    window.SB ? go() : (window.addEventListener("sb:ready", go, { once: !0 }), setTimeout(go, 1e4));
+    /* If the database connection arrives after an offline start, load the real data then. */
+    window.addEventListener("sb:ready", function () {
+      started && !cloudBooted && l() && ((cloudBooted = !0), N().catch(function () {}));
     });
   }
   (window.BL = {

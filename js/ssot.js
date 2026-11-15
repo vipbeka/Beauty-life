@@ -31,6 +31,10 @@
     if (nav) { var ph = String(s.phone || "").trim(); nav.hidden = !ph; nav.style.display = ph ? "" : "none"; }
     var stats = document.querySelector(".hero-stats");
     if (stats) stats.removeAttribute("aria-busy");
+    ["heroTitle", "heroSubtitle", "aboutText", "footerAbout", "whyEyebrow", "whyTitle"].forEach(function (id) {
+      var el = $(id);
+      if (el) hideIfEmpty(el);
+    });
   }
 
   function finalize() {

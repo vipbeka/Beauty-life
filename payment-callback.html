@@ -27,6 +27,10 @@
   .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px;}
   .btns .btn{padding:12px 22px;border-radius:12px;font-weight:800;}
 </style>
+<script>/* Apply the DB theme saved from the last visit before first paint (prevents color flash). */
+(function(){try{var s=JSON.parse(localStorage.getItem("bl_settings_v3")||"null");if(!s)return;var r=document.documentElement.style;
+if(s.themePrimary)r.setProperty("--navy-900",s.themePrimary);if(s.themePrimarySoft||s.themePrimary)r.setProperty("--navy-800",s.themePrimarySoft||s.themePrimary);
+if(s.themeAccent){r.setProperty("--gold-600",s.themeAccent);r.setProperty("--gold-500",s.themeAccent);}}catch(e){}})();</script>
 </head>
 <body>
 <main class="card" id="box" aria-live="polite">
