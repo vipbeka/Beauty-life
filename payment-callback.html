@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>حالة الدفع — Beauty Life</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css">
+<link rel="stylesheet" href="css/main.css">
+<style>
+  body{font-family:'Cairo',sans-serif;background:linear-gradient(135deg,#fef3c7,#fde68a);min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;}
+  .card{background:#fff;max-width:520px;width:92%;padding:32px 28px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.15);text-align:center;}
+  .mini-brand{display:inline-flex;align-items:center;gap:12px;margin-bottom:16px;text-align:right;}
+  .mini-brand .logo-mark{width:56px;height:56px;border-radius:16px;}
+  .mini-brand .logo-name{font-size:1.1rem;}
+  .mini-brand .logo-tag{font-size:.64rem;}
+  .ring{width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:2.4rem;color:#fff;}
+  .ok{background:linear-gradient(135deg,#10b981,#059669);}
+  .fail{background:linear-gradient(135deg,#ef4444,#b91c1c);}
+  .wait{background:linear-gradient(135deg,#f59e0b,#d97706);}
+  h1{margin:6px 0 8px;font-weight:900;}
+  p{color:#475569;line-height:1.8;}
+  .num{font-family:monospace;font-size:1.4rem;font-weight:900;color:#7c2d12;background:#fef3c7;padding:8px 14px;border-radius:8px;display:inline-block;margin:8px 0;}
+  .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px;}
+  .btn{padding:12px 22px;border-radius:10px;font-weight:800;text-decoration:none;border:none;cursor:pointer;}
+  .btn-p{background:linear-gradient(135deg,#d97706,#b45309);color:#fff;}
+  .btn-g{background:#f1f5f9;color:#334155;}
+</style>
+</head>
+<body>
+<div class="card" id="box">
+  <a href="index.html" class="mini-brand" aria-label="Beauty Life Home">
+    <div class="logo-mark logo-image-mark"><img src="assets/company-logo.png" alt="Beauty Life Logo" class="brand-logo-img"></div>
+    <div class="logo-text">
+      <div class="logo-name">Beauty <span>Life</span></div>
+      <div class="logo-tag">Medical Aesthetic</div>
+    </div>
+  </a>
+  <div class="ring wait" id="ring"><i class="fas fa-spinner fa-spin"></i></div>
+  <h1 id="title">جاري التحقق من عملية الدفع...</h1>
+  <p id="msg">لحظات من فضلك، بنأكد الدفع مع البنك.</p>
+  <div class="num" id="ord"></div>
+  <div class="btns">
+    <a href="track.html" class="btn btn-p"><i class="fas fa-truck"></i> تتبع طلبك</a>
+    <a href="index.html" class="btn btn-g">الرئيسية</a>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-init.js"></script>
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const orderNum = qs.get('order') || '';
+  const status   = (qs.get('status') || qs.get('success') || '').toLowerCase();
+  const ring = document.getElementById('ring');
+  const title = document.getElementById('title');
+  const msg = document.getElementById('msg');
+  document.getElementById('ord').textContent = orderNum ? ('رقم الطلب: ' + orderNum) : '';
+
+  function ok(){
+    ring.className='ring ok'; ring.innerHTML='<i class="fas fa-check"></i>';
+    title.textContent='تم الدفع بنجاح ✓';
+    msg.textContent='استلمنا الدفع، هنبدأ تجهيز طلبك فوراً وهنتواصل معاك للتأكيد.';
+  }
+  function fail(){
+    ring.className='ring fail'; ring.innerHTML='<i class="fas fa-xmark"></i>';
+    title.textContent='لم تكتمل عملية الدفع';
+    msg.textContent='حصلت مشكلة أثناء الدفع أو تم إلغاء العملية. تقدر تعيد المحاولة من صفحة تتبع الطلب.';
+  }
+  function pending(){
+    ring.className='ring wait'; ring.innerHTML='<i class="fas fa-hourglass-half"></i>';
+    title.textContent='الدفع قيد المراجعة';
+    msg.textContent='لسه بنستنى تأكيد من البنك. هنحدّث حالة الطلب أول ما تتأكد العملية.';
+  }
+
+  if (status === 'success' || status === 'true' || status === 'paid') return ok();
+  if (status === 'cancel' || status === 'failed' || status === 'false') return fail();
+
+  // خلاف كده — نتحقق من Supabase
+  async function check(){
+    try{
+      if (!window.SB || !window.SB.ready() || !orderNum) return pending();
+      const { data, error } = await window.SB.client
+        .from(window.SB.tables.ORDERS)
+        .select('payment_status')
+        .eq('order_number', orderNum)
+        .maybeSingle();
+      if (error) return pending();
+      const st = (data && data.payment_status) || 'pending';
+      if (st === 'paid') return ok();
+      if (st === 'failed' || st === 'canceled') return fail();
+      return pending();
+    } catch(e){ pending(); }
+  }
+  window.addEventListener('sb:ready', check);
+  setTimeout(check, 800);
+})();
+</script>
+</body>
+</html>

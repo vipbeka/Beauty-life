@@ -1,0 +1,13 @@
+User-agent: *
+Disallow: /admin.html
+Disallow: /admin-login.html
+Disallow: /*.sql$
+Disallow: /*.md$
+Disallow: /firebase.json
+Disallow: /_headers
+Disallow: /_redirects
+Disallow: /track.html
+Disallow: /payment-callback.html
+Allow: /
+
+Sitemap: https://beautylife-eg.com/sitemap.xml

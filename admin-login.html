@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل دخول لوحة التحكم | Beauty Life</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="css/admin.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b1b3a'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23d4af5a'>✚</text></svg>">
+</head>
+<body class="login-page">
+<div class="login-card">
+  <div class="login-logo"><img src="assets/company-logo.png" alt="Beauty Life" class="brand-img"></div>
+  <h1>لوحة تحكم بيوتي لايف</h1>
+  <p class="sub">سجّل دخولك لإدارة المتجر بالكامل</p>
+
+  <div class="login-err" id="loginErr" style="display:none;"><i class="fas fa-triangle-exclamation"></i> <span id="loginErrMsg"></span></div>
+
+  <form id="loginForm">
+    <div class="form-group">
+      <label class="form-label">البريد الإلكتروني</label>
+      <input type="email" class="form-input" id="loginEmail" placeholder="admin@example.com" dir="ltr" style="text-align:end;" autocomplete="username" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label">كلمة المرور</label>
+      <input type="password" class="form-input" id="loginPass" placeholder="••••••" dir="ltr" style="text-align:end;" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem;" id="loginBtn">
+      <i class="fas fa-lock"></i> تسجيل الدخول
+    </button>
+  </form>
+
+  <p style="text-align:center;margin-top:18px;"><a href="index.html" style="color:var(--gray-500);font-weight:700;font-size:.85rem;"><i class="fas fa-arrow-right"></i> العودة للمتجر</a></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-init.js"></script>
+<script src="js/data.js"></script>
+<script src="js/store.js"></script>
+<script>
+/* =====================================================================
+   BEAUTY LIFE — تسجيل دخول الأدمن (v11 — Supabase Auth حقيقي)
+   ---------------------------------------------------------------------
+   ✅ تحقق فعلي من Supabase Auth (مفيش تجاوز)
+   ✅ قائمة إيميلات الأدمن المسموحة
+   ✅ try/catch/finally — الزرار مستحيل يعلّق على Loading
+   ✅ رسايل خطأ عربية واضحة لكل حالة
+   ✅ مهلة زمنية 20 ثانية لو الشبكة وقفت
+   ===================================================================== */
+(function () {
+  'use strict';
+
+  var form    = document.getElementById('loginForm');
+  var btn     = document.getElementById('loginBtn');
+  var errBox  = document.getElementById('loginErr');
+  var errMsg  = document.getElementById('loginErrMsg');
+  var BTN_HTML = btn.innerHTML;
+
+  function showErr(msg) {
+    errBox.style.display = 'block';
+    errMsg.textContent = msg;
+  }
+  function hideErr() { errBox.style.display = 'none'; }
+
+  function setLoading(on) {
+    btn.disabled = on;
+    btn.innerHTML = on
+      ? '<i class="fas fa-spinner fa-spin"></i> جارٍ التحقق...'
+      : BTN_HTML;
+  }
+
+  /* ينتظر تهيئة Supabase — بحد أقصى 10 ثواني */
+  function waitForSB(timeoutMs) {
+    return new Promise(function (resolve, reject) {
+      if (window.SB && window.SB.client) return resolve(window.SB.client);
+      var t0 = Date.now();
+      var iv = setInterval(function () {
+        if (window.SB && window.SB.client) { clearInterval(iv); resolve(window.SB.client); }
+        else if (Date.now() - t0 > (timeoutMs || 10000)) {
+          clearInterval(iv);
+          reject(new Error('SB_TIMEOUT'));
+        }
+      }, 120);
+    });
+  }
+
+  /* أي وعد + مهلة زمنية — يمنع التعليق للأبد */
+  function withTimeout(promise, ms, label) {
+    return Promise.race([
+      promise,
+      new Promise(function (_, rej) {
+        setTimeout(function () { rej(new Error(label || 'TIMEOUT')); }, ms);
+      })
+    ]);
+  }
+
+  function isAllowedAdmin(email) {
+    var list = window.BL_ADMIN_EMAILS;
+    // لو القائمة مش معرّفة أو فاضية → اسمح لأي مستخدم موثّق
+    if (!Array.isArray(list) || list.length === 0) return true;
+    return list.map(function (e) { return String(e).toLowerCase().trim(); })
+               .indexOf(String(email).toLowerCase().trim()) !== -1;
+  }
+
+  async function doLogin(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    hideErr();
+
+    var email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    var pass  = document.getElementById('loginPass').value;
+
+    if (!email || !pass) { showErr('اكتب البريد الإلكتروني وكلمة المرور'); return false; }
+
+    // حماية من المحاولات المتكررة
+    var lockUntil = parseInt(sessionStorage.getItem('bl_lock_until') || '0', 10);
+    if (Date.now() < lockUntil) {
+      var secs = Math.ceil((lockUntil - Date.now()) / 1000);
+      showErr('محاولات كتيرة — استنى ' + secs + ' ثانية وحاول تاني');
+      return false;
+    }
+
+    setLoading(true);
+
+    try {
+      var client = await waitForSB(10000);
+
+      var res = await withTimeout(
+        client.auth.signInWithPassword({ email: email, password: pass }),
+        20000,
+        'NET_TIMEOUT'
+      );
+
+      if (res.error) {
+        var code = res.error.code || '';
+        var m    = (res.error.message || '').toLowerCase();
+        var human = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+
+        if (code === 'email_not_confirmed' || m.indexOf('not confirmed') !== -1) {
+          human = 'الإيميل غير مؤكد — أكّده من لوحة Supabase (Auto Confirm User)';
+        } else if (m.indexOf('too many') !== -1 || code === 'over_request_rate_limit') {
+          human = 'محاولات كتيرة جداً — استنى شوية وحاول تاني';
+        } else if (m.indexOf('user is banned') !== -1) {
+          human = 'الحساب موقوف — راجع إعدادات Supabase';
+        } else if (m.indexOf('failed to fetch') !== -1 || m.indexOf('network') !== -1) {
+          human = 'مشكلة في الاتصال بالسيرفر — راجع الإنترنت';
+        }
+
+        // عدّاد المحاولات
+        var tries = parseInt(sessionStorage.getItem('bl_login_tries') || '0', 10) + 1;
+        sessionStorage.setItem('bl_login_tries', String(tries));
+        if (tries >= 5) {
+          sessionStorage.setItem('bl_lock_until', String(Date.now() + 60000));
+          sessionStorage.setItem('bl_login_tries', '0');
+        }
+
+        console.warn('[BL] فشل الدخول:', res.error);
+        showErr(human);
+        return false;
+      }
+
+      var user = res.data && res.data.user;
+      if (!user) { showErr('لم يتم إرجاع بيانات المستخدم — حاول تاني'); return false; }
+
+      // صلاحية الأدمن
+      if (!isAllowedAdmin(user.email)) {
+        await client.auth.signOut();
+        showErr('الحساب ده مش مصرح له بالدخول للوحة التحكم');
+        return false;
+      }
+
+      // ✅ نجح
+      sessionStorage.removeItem('bl_login_tries');
+      sessionStorage.removeItem('bl_lock_until');
+      sessionStorage.setItem('bl_admin_auth', '1');
+      sessionStorage.setItem('bl_admin_auth_ts', String(Date.now()));
+      sessionStorage.setItem('bl_admin_email', user.email || '');
+      window.location.replace('admin.html');
+      return true;
+
+    } catch (err) {
+      console.error('[BL] استثناء أثناء الدخول:', err);
+      var msg = String(err && err.message || err);
+      if (msg === 'SB_TIMEOUT') {
+        showErr('تعذّر الاتصال بقاعدة البيانات — اعمل تحديث للصفحة (Ctrl+Shift+R)');
+      } else if (msg === 'NET_TIMEOUT') {
+        showErr('السيرفر مردش خلال 20 ثانية — راجع الإنترنت وحاول تاني');
+      } else {
+        showErr('حصل خطأ غير متوقع: ' + msg);
+      }
+      return false;
+
+    } finally {
+      // ⭐ ده اللي بيمنع الزرار يفضل يلف للأبد
+      setLoading(false);
+    }
+  }
+
+  form.addEventListener('submit', doLogin);
+
+  /* لو فيه جلسة شغالة بالفعل → دخول مباشر */
+  (async function checkExisting() {
+    try {
+      var client = await waitForSB(8000);
+      var s = await client.auth.getSession();
+      var u = s && s.data && s.data.session && s.data.session.user;
+      if (u && isAllowedAdmin(u.email)) {
+        sessionStorage.setItem('bl_admin_auth', '1');
+        sessionStorage.setItem('bl_admin_email', u.email || '');
+        window.location.replace('admin.html');
+      }
+    } catch (e) { /* عادي — يفضل في صفحة الدخول */ }
+  })();
+})();
+</script>
+<script src="js/security-hardening.js"></script>
+</body>
+</html>

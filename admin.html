@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم | Beauty Life</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="css/admin.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b1b3a'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23d4af5a'>✚</text></svg>">
+  <link rel="stylesheet" href="css/advanced-features.css">
+</head>
+<body>
+
+<div class="admin-shell">
+  <!-- ===== Sidebar ===== -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-brand">
+      <div class="mark logo-image-mark"><img src="assets/company-logo.png" alt="Beauty Life" class="admin-brand-logo"></div>
+      <div><b>Beauty Life</b><small>Admin Panel</small></div>
+    </div>
+    <nav class="admin-nav">
+      <div class="admin-nav-label">الرئيسية</div>
+      <button class="admin-nav-item active" data-nav="dashboard" onclick="showPane('dashboard')"><i class="fas fa-chart-pie"></i> لوحة المعلومات</button>
+      <button class="admin-nav-item" data-nav="orders" onclick="showPane('orders')"><i class="fas fa-receipt"></i> الطلبات <span class="nav-count" id="navOrdersCount">0</span></button>
+      <button class="admin-nav-item" data-nav="returns" onclick="showPane('returns')"><i class="fas fa-rotate-left"></i> طلبات الاسترجاع <span class="nav-count" id="navReturnsCount">0</span></button>
+      <button class="admin-nav-item" data-nav="consultations" onclick="showPane('consultations')"><i class="fas fa-stethoscope"></i> الاستشارات <span class="nav-count" id="navConsultCount">0</span></button>
+      <button class="admin-nav-item" data-nav="leads" onclick="showPane('leads')"><i class="fas fa-address-book"></i> زوار الموقع <span class="nav-count" id="navLeadsCount">0</span></button>
+
+      <div class="admin-nav-label">الكتالوج</div>
+      <button class="admin-nav-item" data-nav="products" onclick="showPane('products')"><i class="fas fa-box-open"></i> المنتجات</button>
+      <button class="admin-nav-item" data-nav="categories" onclick="showPane('categories')"><i class="fas fa-layer-group"></i> الأقسام</button>
+      <button class="admin-nav-item" data-nav="coupons" onclick="showPane('coupons')"><i class="fas fa-ticket"></i> كوبونات الخصم</button>
+      <button class="admin-nav-item" data-nav="testimonials" onclick="showPane('testimonials')"><i class="fas fa-star"></i> آراء العملاء</button>
+
+      <div class="admin-nav-label">المتجر</div>
+      <button class="admin-nav-item" data-nav="appearance" onclick="showPane('appearance')"><i class="fas fa-palette"></i> المظهر والمحتوى</button>
+      <button class="admin-nav-item" data-nav="shipping" onclick="showPane('shipping')"><i class="fas fa-truck-fast"></i> الشحن والدفع</button>
+      <button class="admin-nav-item" data-nav="settings" onclick="showPane('settings')"><i class="fas fa-gear"></i> الإعدادات والأمان</button>
+    </nav>
+    <div class="admin-side-foot">
+      <a href="index.html" class="view-site-btn"><i class="fas fa-store"></i> عرض المتجر</a>
+      <button class="logout-btn" onclick="adminLogout()"><i class="fas fa-arrow-right-from-bracket"></i> تسجيل الخروج</button>
+    </div>
+  </aside>
+
+  <!-- ===== Main ===== -->
+  <main class="admin-main">
+    <div class="admin-topbar" dir="rtl">
+      <button class="side-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+      <div>
+        <h1 id="paneTitle">لوحة المعلومات</h1>
+        <div class="crumb" id="paneCrumb">نظرة عامة على أداء المتجر</div>
+      </div>
+      <div id="rtStatus" title="حالة التزامن اللحظي" style="margin-inline-start:auto;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:#fee;color:#c00;font-family:'Noto Sans Arabic','Cairo',sans-serif;font-weight:600;font-size:.85rem;transition:all .3s;">
+        <span id="rtDot" style="width:10px;height:10px;border-radius:50%;background:#c00;box-shadow:0 0 0 0 rgba(204,0,0,.6);animation:rtPulse 1.5s infinite;display:inline-block;"></span>
+        <span id="rtLabel">جارٍ الاتصال...</span>
+      </div>
+    </div>
+    <style>
+      @keyframes rtPulse { 0%{box-shadow:0 0 0 0 rgba(0,180,80,.6);} 70%{box-shadow:0 0 0 8px rgba(0,180,80,0);} 100%{box-shadow:0 0 0 0 rgba(0,180,80,0);} }
+      #rtStatus.connected { background:#e6faec !important; color:#0a7f3c !important; }
+      #rtStatus.connected #rtDot { background:#0a7f3c !important; }
+    </style>
+
+    <!-- ===== DASHBOARD ===== -->
+    <section class="pane active" data-pane="dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon si-navy"><i class="fas fa-receipt"></i></div><div><b id="stOrders">0</b><small>إجمالي الطلبات</small></div></div>
+        <div class="stat-card"><div class="stat-icon si-gold"><i class="fas fa-sack-dollar"></i></div><div><b id="stRevenue">0</b><small>إجمالي المبيعات</small></div></div>
+        <div class="stat-card"><div class="stat-icon si-green"><i class="fas fa-box-open"></i></div><div><b id="stProducts">0</b><small>عدد المنتجات</small></div></div>
+        <div class="stat-card"><div class="stat-icon si-red"><i class="fas fa-clock"></i></div><div><b id="stPending">0</b><small>طلبات بانتظار المراجعة</small></div></div>
+        <div class="stat-card"><div class="stat-icon si-blue"><i class="fas fa-stethoscope"></i></div><div><b id="stConsultNew">0</b><small>استشارات جديدة</small></div></div>
+        <div class="stat-card"><div class="stat-icon si-green"><i class="fas fa-shield-halved"></i></div><div><b id="stReturnsNew">0</b><small>استرجاع + ضمان</small></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h2><i class="fas fa-clock-rotate-left"></i> أحدث الطلبات</h2>
+          <div class="spacer"></div>
+          <button class="btn btn-ghost btn-sm" onclick="showPane('orders')">عرض الكل <i class="fas fa-chevron-left"></i></button>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>رقم الطلب</th><th>العميل</th><th>الإجمالي</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+          <tbody id="dashRecentOrders"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ===== ORDERS ===== -->
+    <section class="pane" data-pane="orders">
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-receipt"></i> كل الطلبات</h2>
+          <div class="spacer"></div>
+          <button class="btn btn-ghost btn-sm" onclick="exportOrdersCSV()"><i class="fas fa-file-excel"></i> تصدير CSV</button>
+        </div>
+        <div class="toolbar">
+          <div class="search-box"><i class="fas fa-magnifying-glass"></i><input type="text" class="form-input" id="orderSearch" placeholder="ابحث برقم الطلب / الاسم / الموبايل" oninput="renderOrders()"></div>
+          <select class="form-select" id="orderStatusFilter" style="max-width:200px;" onchange="renderOrders()">
+            <option value="">كل الحالات</option>
+            <option value="pending">قيد المراجعة</option>
+            <option value="confirmed">مؤكد</option>
+            <option value="processing">قيد التجهيز</option>
+            <option value="shipped">تم الشحن</option>
+            <option value="delivered">تم التسليم</option>
+            <option value="cancelled">ملغي</option>
+          </select>
+          <select class="form-select" id="orderPayFilter" style="max-width:200px;" onchange="renderOrders()">
+            <option value="">كل طرق الدفع</option>
+            <option value="cod">عند الاستلام</option>
+            <option value="visa">فيزا/Paymob</option>
+            <option value="stripe">Stripe</option>
+            <option value="paid">مدفوع</option>
+            <option value="unpaid">غير مدفوع</option>
+          </select>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>رقم الطلب</th><th>العميل</th><th>الموبايل</th><th>عدد الأصناف</th><th>الشحن</th><th>الدفع</th><th>الإجمالي</th><th>الحالة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+          <tbody id="ordersTbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ===== RETURNS + WARRANTY ===== -->
+    <section class="pane" data-pane="returns">
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-rotate-left"></i> طلبات الاسترجاع</h2></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>رقم الطلب</th><th>العميل</th><th>الموبايل</th><th>صور</th><th>السبب</th><th>الحالة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+          <tbody id="returnsTbody"></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-shield-halved"></i> مطالبات الضمان (بحساب تاريخ الشراء)</h2></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>الطلب</th><th>المنتج</th><th>تاريخ الشراء</th><th>انتهاء الضمان</th><th>نوع العطل</th><th>الوصف</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody id="warrantyTbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ===== CONSULTATIONS ===== -->
+    <section class="pane" data-pane="consultations">
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-stethoscope"></i> طلبات الاستشارة المجانية</h2></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>الاسم</th><th>الموبايل</th><th>العيادة</th><th>التخصص</th><th>الاستفسار</th><th>الميزانية</th><th>الحالة</th><th>آخر رد</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+          <tbody id="consultsTbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ===== LEADS (زوار الموقع) ===== -->
+    <section class="pane" data-pane="leads">
+      <div class="card">
+        <div class="card-head">
+          <h2><i class="fas fa-address-book"></i> بيانات زوار الموقع (نافذة الدخول)</h2>
+          <div class="spacer"></div>
+          <button class="btn btn-ghost btn-sm" onclick="refreshLeads()"><i class="fas fa-rotate"></i> تحديث</button>
+          <button class="btn btn-gold btn-sm" onclick="exportLeadsCSV()"><i class="fas fa-file-csv"></i> تصدير ملف CSV</button>
+        </div>
+        <div class="toolbar">
+          <div class="search-box"><i class="fas fa-magnifying-glass"></i><input type="text" class="form-input" id="leadsSearch" placeholder="ابحث بالاسم أو الرقم..." oninput="renderLeads()"></div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>الاسم</th><th>الموبايل</th><th>الصفحة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+          <tbody id="leadsTbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ===== PRODUCTS ===== -->
+    <section class="pane" data-pane="products">
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-box-open"></i> المنتجات</h2>
+          <div class="spacer"></div>
+          <button class="btn btn-gold btn-sm" onclick="openProductModal()"><i class="fas fa-plus"></i> إضافة منتج جديد</button>
+        </div>
+        <div class="toolbar">
+          <div class="search-box"><i class="fas fa-magnifying-glass"></i><input type="text" class="form-input" id="productSearch" placeholder="ابحث عن منتج..." oninput="renderProductsTable()"></div>
+          <select class="form-select" id="productCatFilter" style="max-width:200px;" onchange="renderProductsTable()"><option value="">كل الأقسام</option></select>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>الصورة</th><th>المنتج</th><th>القسم</th><th>السعر</th><th>المخزون</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody id="productsTbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ===== CATEGORIES ===== -->
+    <section class="pane" data-pane="categories">
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-layer-group"></i> الأقسام</h2>
+          <div class="spacer"></div>
+          <button class="btn btn-gold btn-sm" onclick="openCategoryModal()"><i class="fas fa-plus"></i> إضافة قسم جديد</button>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>الصورة</th><th>اسم القسم</th><th>الوصف</th><th>عدد المنتجات</th><th>الترتيب</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody id="categoriesTbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ===== COUPONS ===== -->
+    <section class="pane" data-pane="coupons">
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-ticket"></i> كوبونات الخصم</h2>
+          <div class="spacer"></div>
+          <button class="btn btn-gold btn-sm" onclick="openCouponModal()"><i class="fas fa-plus"></i> إضافة كوبون</button>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>الكود</th><th>الخصم</th><th>حد الطلب الأدنى</th><th>الاستخدامات</th><th>الانتهاء</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody id="couponsTbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ===== TESTIMONIALS ===== -->
+    <section class="pane" data-pane="testimonials">
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-star"></i> آراء العملاء</h2>
+          <div class="spacer"></div>
+          <button class="btn btn-gold btn-sm" onclick="openTestimonialModal()"><i class="fas fa-plus"></i> إضافة رأي</button>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>الاسم</th><th>المدينة / العيادة</th><th>النوع</th><th>المنتج</th><th>رقم الطلب</th><th>التقييم</th><th>النص</th><th>الحالة</th><th>الاعتماد</th><th>إجراءات</th></tr></thead>
+          <tbody id="testimonialsTbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ===== APPEARANCE ===== -->
+    <section class="pane" data-pane="appearance">
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-bullhorn"></i> شريط الإعلانات والـ Ticker</h2></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">جمل شريط الإعلان العلوي (متحرك بأنيميشن احترافي — بدون حد أقصى لعدد الجمل)</label>
+            <p class="form-hint">لكل جملة أيقونة خاصة بيها — اكتب اسم أيقونة Font Awesome يدويًا (زي أيقونات قسم "ليه بيوتي لايف")، مثال: <code>fa-bullhorn</code>، <code>fa-truck-fast</code>، <code>fa-shield-halved</code>، <code>fa-user-graduate</code>، <code>fa-star</code>.</p>
+            <div class="ticker-list" id="announceList"></div>
+            <button class="btn btn-ghost btn-sm" onclick="addAnnounceRow()"><i class="fas fa-plus"></i> إضافة جملة</button>
+          </div>
+          <label class="form-label">جمل الـ Ticker المتحرك</label>
+          <div class="ticker-list" id="tickerList"></div>
+          <button class="btn btn-ghost btn-sm" onclick="addTickerRow()"><i class="fas fa-plus"></i> إضافة جملة</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-image"></i> قسم الـ Hero (الواجهة الرئيسية)</h2></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">العنوان الرئيسي</label><input type="text" class="form-input" id="set_heroTitle"></div>
+            <div class="form-group"><label class="form-label">العنوان الفرعي</label><input type="text" class="form-input" id="set_heroSubtitle"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">الجملة فوق صورة الـ Hero</label><input type="text" class="form-input" id="set_heroFloatTitle" placeholder="مثال: ضمان سنتان"></div>
+            <div class="form-group"><label class="form-label">الجملة الصغيرة تحتها</label><input type="text" class="form-input" id="set_heroFloatSubtitle" placeholder="مثال: + صيانة معتمدة"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">صورة الـ Hero (ارفع صورة إعلان كبيرة من جهازك)</label>
+            <div class="file-drop" onclick="document.getElementById('heroImgFile').click()">
+              <i class="fas fa-cloud-arrow-up"></i>
+              <p>اضغط لرفع صورة الـ Hero</p>
+              <small>PNG / JPG / WebP — يُفضل 1200×900 أو أكبر</small>
+            </div>
+            <input type="file" id="heroImgFile" accept="image/*" class="hidden" onchange="onHeroImagePicked(this)">
+            <div class="img-preview-row" id="heroImgPreview"></div>
+            <div class="form-group" style="margin-top:12px;">
+              <label class="form-label">أو ضع رابط صورة</label>
+              <input type="text" class="form-input" id="set_heroImage" dir="ltr" placeholder="https://...">
+            </div>
+          </div>
+          <h3 class="form-section-title"><i class="fas fa-chart-line"></i> إحصائيات الـ Hero</h3>
+          <div class="form-row-3">
+            <div class="form-group"><label class="form-label">الإحصائية الأولى — الرقم</label><input type="text" class="form-input" id="set_heroStat1Value"></div>
+            <div class="form-group"><label class="form-label">الإحصائية الثانية — الرقم</label><input type="text" class="form-input" id="set_heroStat2Value"></div>
+            <div class="form-group"><label class="form-label">الإحصائية الثالثة — الرقم</label><input type="text" class="form-input" id="set_heroStat3Value"></div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group"><label class="form-label">الإحصائية الأولى — النص</label><input type="text" class="form-input" id="set_heroStat1Label"></div>
+            <div class="form-group"><label class="form-label">الإحصائية الثانية — النص</label><input type="text" class="form-input" id="set_heroStat2Label"></div>
+            <div class="form-group"><label class="form-label">الإحصائية الثالثة — النص</label><input type="text" class="form-input" id="set_heroStat3Label"></div>
+          </div>
+          <h3 class="form-section-title"><i class="fas fa-share-nodes"></i> روابط السوشيال ميديا</h3>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Facebook</label><input type="url" class="form-input" id="set_socialFacebook" dir="ltr" placeholder="https://facebook.com/..." ></div>
+            <div class="form-group"><label class="form-label">Instagram</label><input type="url" class="form-input" id="set_socialInstagram" dir="ltr" placeholder="https://instagram.com/..." ></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">TikTok</label><input type="url" class="form-input" id="set_socialTiktok" dir="ltr" placeholder="https://tiktok.com/..." ></div>
+            <div class="form-group"><label class="form-label">YouTube</label><input type="url" class="form-input" id="set_socialYoutube" dir="ltr" placeholder="https://youtube.com/..." ></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">نص "من نحن"</label>
+            <textarea class="form-textarea" id="set_aboutText"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="saveAppearance()"><i class="fas fa-floppy-disk"></i> حفظ المظهر</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SHIPPING & PAYMENT ===== -->
+    <section class="pane" data-pane="shipping">
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-truck-fast"></i> إعدادات الشحن</h2></div>
+        <div class="card-body">
+          <div class="form-row-3">
+            <div class="form-group"><label class="form-label">رسوم الشحن المحلي (مصر)</label><input type="number" class="form-input" id="set_localFee" min="0"></div>
+            <div class="form-group"><label class="form-label">رسوم الشحن الدولي</label><input type="number" class="form-input" id="set_intlFee" min="0"></div>
+            <div class="form-group"><label class="form-label">شحن مجاني فوق (ج.م)</label><input type="number" class="form-input" id="set_freeAbove" min="0"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-credit-card"></i> طرق الدفع</h2></div>
+        <div class="card-body">
+          <div class="switch-row">
+            <div><b>الدفع عند الاستلام (COD)</b><small>متاح للشحن المحلي داخل مصر</small></div>
+            <label class="switch"><input type="checkbox" id="set_codEnabled" checked><span class="sl"></span></label>
+          </div>
+          <div class="switch-row">
+            <div><b>فيزا / ماستركارد (Paymob)</b><small>دفع إلكتروني آمن — الفلوس تدخل بنكك المصري فوراً</small></div>
+            <label class="switch"><input type="checkbox" id="set_visaEnabled" checked><span class="sl"></span></label>
+          </div>
+          <div class="switch-row">
+            <div><b>Stripe (دولي)</b><small>للعملاء خارج مصر — Visa / Mastercard / Apple Pay</small></div>
+            <label class="switch"><input type="checkbox" id="set_stripeEnabled"><span class="sl"></span></label>
+          </div>
+
+          <h3 class="form-section-title" style="margin-top:18px;"><i class="fas fa-shield-halved" style="color:#10b981;"></i> إعدادات بوابة Paymob (مصر)</h3>
+          <div class="form-hint" style="margin:0 0 14px;padding:14px 16px;background:#ecfdf5;border-radius:10px;border-right:4px solid #10b981;">
+            <i class="fas fa-lock" style="color:#0a7f3c;"></i>
+            <b>تنبيه أمني:</b> المفاتيح السرية (Secret / HMAC) لازم تتضبط على السيرفر (Edge Functions / Environment Variables) فقط — مش في واجهة الموقع.
+            هنا بنحط المفاتيح العامة ومعرّفات التكامل الظاهرة للعميل.
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Paymob Public Key</label><input type="text" class="form-input" id="set_paymobPublicKey" dir="ltr" placeholder="egy_pk_live_..."></div>
+            <div class="form-group"><label class="form-label">Card Integration ID</label><input type="text" class="form-input" id="set_paymobCardId" dir="ltr" placeholder="e.g. 4567890"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Wallet Integration ID (اختياري)</label><input type="text" class="form-input" id="set_paymobWalletId" dir="ltr"></div>
+            <div class="form-group"><label class="form-label">iFrame ID</label><input type="text" class="form-input" id="set_paymobIframeId" dir="ltr"></div>
+          </div>
+
+          <h3 class="form-section-title" style="margin-top:18px;"><i class="fab fa-stripe-s" style="color:#635bff;"></i> إعدادات Stripe (للعملاء خارج مصر)</h3>
+          <div class="form-hint" style="margin:0 0 14px;padding:14px 16px;background:#f5f3ff;border-radius:10px;border-right:4px solid #635bff;">
+            <i class="fas fa-lock" style="color:#5b21b6;"></i>
+            <b>تنبيه أمني:</b> هنا فقط <code>Stripe Publishable Key</code>. مفاتيح <code>Secret</code> و <code>Webhook Secret</code> لازم تتضبط على السيرفر فقط.
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Stripe Publishable Key</label><input type="text" class="form-input" id="set_stripePublicKey" dir="ltr" placeholder="pk_live_..."></div>
+          </div>
+
+          <details style="margin-top:18px;background:#f8fafc;padding:12px 16px;border-radius:10px;">
+            <summary style="cursor:pointer;font-weight:800;color:#334155;"><i class="fas fa-building-columns"></i> بيانات الحساب البنكي (احتياطي — للتحويل اليدوي)</summary>
+            <div class="form-row" style="margin-top:12px;">
+              <div class="form-group"><label class="form-label">اسم البنك</label><input type="text" class="form-input" id="set_bankName"></div>
+              <div class="form-group"><label class="form-label">اسم صاحب الحساب</label><input type="text" class="form-input" id="set_bankAccName"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">رقم الحساب</label><input type="text" class="form-input" id="set_bankAccNum" dir="ltr"></div>
+              <div class="form-group"><label class="form-label">IBAN</label><input type="text" class="form-input" id="set_bankIban" dir="ltr"></div>
+            </div>
+            <div class="form-group" style="max-width:320px;"><label class="form-label">SWIFT Code</label><input type="text" class="form-input" id="set_bankSwift" dir="ltr"></div>
+          </details>
+
+          <button class="btn btn-primary" style="margin-top:14px;" onclick="saveShipping()"><i class="fas fa-floppy-disk"></i> حفظ إعدادات الشحن والدفع</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SETTINGS ===== -->
+    <section class="pane" data-pane="settings">
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-store"></i> بيانات المتجر</h2></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">اسم المتجر</label><input type="text" class="form-input" id="set_storeName"></div>
+            <div class="form-group"><label class="form-label">الشعار النصي (Tagline)</label><input type="text" class="form-input" id="set_tagline"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">رقم الهاتف</label><input type="text" class="form-input" id="set_phone" dir="ltr"></div>
+            <div class="form-group"><label class="form-label">رقم واتساب (بالكود الدولي بدون +)</label><input type="text" class="form-input" id="set_whatsapp" dir="ltr" placeholder="2010xxxxxxxx"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">البريد الإلكتروني</label><input type="email" class="form-input" id="set_email" dir="ltr"></div>
+            <div class="form-group"><label class="form-label">العنوان</label><input type="text" class="form-input" id="set_address"></div>
+          </div>
+          <div class="form-group" style="max-width:200px;"><label class="form-label">العملة</label><input type="text" class="form-input" id="set_currency"></div>
+          <div class="visitor-login-setting" style="margin:18px 0 16px;padding:16px 18px;background:#f8fafc;border:1px solid var(--gray-200);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:800;color:var(--gray-800);"><i class="fas fa-user-lock" style="color:var(--primary);"></i> لوحة تسجيل الدخول للزوار</div>
+              <div class="form-hint" style="margin-top:5px;">عند التفعيل تظهر نافذة تسجيل الاسم ورقم الهاتف عند دخول الزائر لأول مرة.</div>
+            </div>
+            <label class="switch-control" style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;white-space:nowrap;">
+              <input type="checkbox" id="set_visitorLoginEnabled" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer;">
+              <span>تفعيل اللوحة</span>
+            </label>
+          </div>
+          <button class="btn btn-primary" onclick="saveStoreSettings()"><i class="fas fa-floppy-disk"></i> حفظ بيانات المتجر</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-lock"></i> بيانات دخول لوحة التحكم</h2></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">البريد الإلكتروني للدخول</label><input type="email" class="form-input" id="adm_email" dir="ltr"></div>
+            <div class="form-group"><label class="form-label">كلمة المرور الجديدة</label><input type="password" class="form-input" id="adm_password" dir="ltr" placeholder="اتركها فارغة لو مش عايز تغيرها"></div>
+          </div>
+          <button class="btn btn-primary" onclick="saveAdminCreds()"><i class="fas fa-key"></i> تحديث بيانات الدخول</button>
+          <p class="form-hint" style="margin-top:10px;"><i class="fas fa-shield-halved"></i> بيانات الدخول بتتخزن محلياً بصيغة تجزئة (SHA-256). لإضافة طبقة أمان إضافية، استخدم Supabase Auth.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-database"></i> قاعدة البيانات (Supabase)</h2></div>
+        <div class="card-body">
+          <p style="font-weight:700;color:var(--gray-700);margin-bottom:14px;">حالة الاتصال: <span id="dbStatus">جارٍ الفحص...</span></p>
+          <div class="form-hint" style="margin:0;padding:14px 16px;background:#f8fafc;border-radius:12px;border:1px solid var(--gray-200);">
+            <i class="fas fa-shield-halved"></i>
+            <b>تنبيه أمني:</b> مفاتيح <code>Service Role</code> / <code>Stripe Secret</code> / <code>Paymob Secret</code> لا يتم حفظها داخل واجهة الموقع. كلها لازم تتضبط على السيرفر فقط.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2><i class="fas fa-rotate"></i> إدارة البيانات والمزامنة</h2></div>
+        <div class="card-body">
+          <p style="color:var(--gray-700);margin-bottom:12px;font-size:14px;line-height:1.7;">
+            <i class="fas fa-cloud" style="color:var(--primary);"></i>
+            المنتجات والأقسام بتتحفظ على <b>Supabase</b> وبتظهر فوراً على كل الأجهزة.
+            لو لقيت حاجة مش متزامنة، اضغط <b>تحديث من السحابة</b>.
+          </p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <button class="btn btn-primary" onclick="forceRefresh()"><i class="fas fa-cloud-arrow-down"></i> تحديث من السحابة</button>
+            <button class="btn btn-ghost" onclick="seedCloudData()"><i class="fas fa-seedling"></i> زرع البيانات الافتراضية على Supabase</button>
+            <button class="btn btn-ghost" onclick="resetToDefaults()"><i class="fas fa-rotate-left"></i> مسح الكاش المحلي</button>
+            <button class="btn btn-danger" onclick="clearAllData()"><i class="fas fa-trash"></i> مسح كل البيانات المحلية</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===== PRODUCT MODAL ===== -->
+<div class="modal-back" id="productModal">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="productModalTitle">إضافة منتج جديد</h3>
+      <button class="modal-x" onclick="closeAdminModal('productModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="p_id">
+      <div class="form-group">
+        <label class="form-label">اسم المنتج <span class="req">*</span></label>
+        <input type="text" class="form-input" id="p_name" placeholder="مثال: جهاز ليزر ديودو 808nm">
+      </div>
+      <div class="form-group">
+        <label class="form-label">الوصف التفصيلي</label>
+        <textarea class="form-textarea" id="p_desc" placeholder="اكتب وصف احترافي للمنتج..."></textarea>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">السعر (ج.م) <span class="req">*</span></label><input type="number" class="form-input" id="p_price" min="0" step="0.01"></div>
+        <div class="form-group"><label class="form-label">السعر قبل الخصم</label><input type="number" class="form-input" id="p_oldPrice" min="0" step="0.01"></div>
+        <div class="form-group"><label class="form-label">الكمية بالمخزون</label><input type="number" class="form-input" id="p_stock" min="0" value="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">القسم <span class="req">*</span></label>
+          <select class="form-select" id="p_category"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">شارة افتراضية (للتوافق مع القديم)</label>
+          <select class="form-select" id="p_badge">
+            <option value="">بدون شارة</option>
+            <option value="جديد">جديد</option>
+            <option value="الأكثر مبيعاً">الأكثر مبيعاً</option>
+            <option value="خصم">خصم</option>
+            <option value="كمية محدودة">كمية محدودة</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">مدة الضمان (أيام — تمنح العميل حق المطالبة)</label>
+          <input type="number" class="form-input" id="p_warranty_days" min="0" step="1" value="365">
+        </div>
+      </div>
+
+      <h3 class="form-section-title"><i class="fas fa-award"></i> شارات المنتج المتعددة (منطق رودي — كل شارة لها وقت وتختفي)</h3>
+      <div class="form-hint" style="background:#f8fafc;border-right:4px solid var(--gold-600);padding:10px 12px;border-radius:8px;margin-bottom:10px;">
+        <i class="fas fa-lightbulb" style="color:var(--gold-600);"></i>
+        تقدر تضيف أكتر من شارة على نفس المنتج. كل شارة لها تاريخ انتهاء — لو الوقت عدّى الشارة تختفي تلقائياً.
+      </div>
+      <div id="p_badgesList" style="margin-bottom:10px;"></div>
+      <div class="form-row" style="align-items:flex-end;flex-wrap:wrap;">
+        <div class="form-group" style="flex:2;min-width:180px;"><label class="form-label">اسم الشارة</label><input type="text" class="form-input" id="p_badge_label" placeholder="مثال: -20%"></div>
+        <div class="form-group" style="flex:1;min-width:120px;"><label class="form-label">اللون</label><input type="color" class="form-input" id="p_badge_color" value="#10b981" style="height:44px;padding:4px;"></div>
+        <div class="form-group" style="flex:1;min-width:160px;"><label class="form-label">الأيقونة</label>
+          <select class="form-select" id="p_badge_icon">
+            <option value="fa-tag">🏷️ تاج عام</option>
+            <option value="fa-bolt">⚡ عرض</option>
+            <option value="fa-fire">🔥 رائج</option>
+            <option value="fa-crown">👑 الأكثر مبيعاً</option>
+            <option value="fa-sparkles">✨ جديد</option>
+            <option value="fa-percent">٪ خصم</option>
+            <option value="fa-clock">⏰ محدود</option>
+            <option value="fa-truck-fast">🚚 شحن مجاني</option>
+            <option value="fa-shield-halved">🛡️ ضمان</option>
+            <option value="fa-hand-sparkles">🪡 بالحجز</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;min-width:180px;"><label class="form-label">السلوك الوظيفي</label><select class="form-select" id="p_badge_behavior"><option value="generic">عرض فقط</option><option value="free_shipping">شحن مجاني</option><option value="new_arrival">وصل حديثاً</option><option value="best_seller">الأكثر مبيعاً</option><option value="featured">منتج مميز</option><option value="discount">عرض / خصم</option><option value="warranty">ضمان</option><option value="limited">كمية محدودة</option><option value="preorder">بالحجز</option></select></div>
+        <div class="form-group" style="flex:1;min-width:140px;"><label class="form-label">ينتهي في</label><input type="date" class="form-input" id="p_badge_expires"></div>
+        <div class="form-group" style="margin:0;"><button type="button" class="btn btn-gold btn-sm" onclick="addBadgeRow()"><i class="fas fa-plus"></i> إضافة الشارة</button></div>
+      </div>
+
+      <h3 class="form-section-title"><i class="fas fa-images"></i> صور المنتج (ارفع من جهازك)</h3>
+      <div class="form-group">
+        <label class="form-label">الصورة الرئيسية</label>
+        <div class="file-drop" onclick="document.getElementById('p_mainImgFile').click()">
+          <i class="fas fa-cloud-arrow-up"></i><p>اضغط لرفع الصورة الرئيسية</p><small>PNG / JPG / WebP — مربعة يُفضل 1000×1000</small>
+        </div>
+        <input type="file" id="p_mainImgFile" accept="image/*" class="hidden" onchange="onProductMainImagePicked(this)">
+        <div class="img-preview-row" id="p_mainImgPreview"></div>
+        <input type="text" class="form-input" id="p_imageUrl" dir="ltr" placeholder="أو ضع رابط صورة مباشر https://..." style="margin-top:10px;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">صور إضافية (معرض صور — حتى 6 صور)</label>
+        <div class="file-drop" onclick="document.getElementById('p_galleryFiles').click()">
+          <i class="fas fa-images"></i><p>اضغط لرفع صور إضافية</p><small>تقدر تختار أكثر من صورة مرة واحدة</small>
+        </div>
+        <input type="file" id="p_galleryFiles" accept="image/*" multiple class="hidden" onchange="onProductGalleryPicked(this)">
+        <div class="img-preview-row" id="p_galleryPreview"></div>
+      </div>
+
+      <h3 class="form-section-title"><i class="fas fa-list-check"></i> المواصفات التقنية</h3>
+      <div id="specsList"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addSpecRow()"><i class="fas fa-plus"></i> إضافة مواصفة</button>
+
+      <div class="form-group">
+        <label class="form-label">الضمان (نص قصير للعرض على العميل)</label>
+        <input type="text" class="form-input" id="p_warranty" placeholder="ضمان سنتان">
+      </div>
+
+      <div class="switch-row">
+        <div><b>منتج مميز</b><small>يظهر في قسم الأجهزة المميزة بالرئيسية</small></div>
+        <label class="switch"><input type="checkbox" id="p_featured"><span class="sl"></span></label>
+      </div>
+      <div class="switch-row">
+        <div><b>وصل حديثاً</b><small>يظهر في فلتر "وصل حديثاً"</small></div>
+        <label class="switch"><input type="checkbox" id="p_isNew"><span class="sl"></span></label>
+      </div>
+      <div class="switch-row">
+        <div><b>نشط</b><small>ظاهر في المتجر للعملاء</small></div>
+        <label class="switch"><input type="checkbox" id="p_active" checked><span class="sl"></span></label>
+      </div>
+
+      <button class="btn btn-gold btn-block" style="padding:14px;margin-top:8px;" onclick="saveProduct()" id="saveProductBtn">
+        <i class="fas fa-floppy-disk"></i> حفظ المنتج
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CATEGORY MODAL ===== -->
+<div class="modal-back" id="categoryModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="categoryModalTitle">إضافة قسم جديد</h3>
+      <button class="modal-x" onclick="closeAdminModal('categoryModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="c_id">
+      <div class="form-group"><label class="form-label">اسم القسم <span class="req">*</span></label><input type="text" class="form-input" id="c_name" placeholder="مثال: أجهزة الليزر"></div>
+      <div class="form-group"><label class="form-label">وصف القسم</label><input type="text" class="form-input" id="c_desc"></div>
+      <div class="form-group">
+        <label class="form-label">صورة القسم (ارفع من جهازك)</label>
+        <div class="file-drop" onclick="document.getElementById('c_imgFile').click()">
+          <i class="fas fa-cloud-arrow-up"></i><p>اضغط لرفع صورة القسم</p><small>يُفضل 800×500</small>
+        </div>
+        <input type="file" id="c_imgFile" accept="image/*" class="hidden" onchange="onCategoryImagePicked(this)">
+        <div class="img-preview-row" id="c_imgPreview"></div>
+        <input type="text" class="form-input" id="c_imageUrl" dir="ltr" placeholder="أو ضع رابط صورة https://..." style="margin-top:10px;">
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">ترتيب الظهور</label><input type="number" class="form-input" id="c_sort" min="0" value="0"></div>
+        <div class="form-group">
+          <label class="form-label">الحالة</label>
+          <div class="switch-row" style="margin-top:4px;">
+            <div><b>نشط</b></div>
+            <label class="switch"><input type="checkbox" id="c_active" checked><span class="sl"></span></label>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-gold btn-block" onclick="saveCategory()" id="saveCategoryBtn"><i class="fas fa-floppy-disk"></i> حفظ القسم</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== COUPON MODAL ===== -->
+<div class="modal-back" id="couponModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="couponModalTitle">إضافة كوبون</h3>
+      <button class="modal-x" onclick="closeAdminModal('couponModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cp_id">
+      <div class="form-group"><label class="form-label">كود الخصم <span class="req">*</span></label><input type="text" class="form-input" id="cp_code" dir="ltr" placeholder="BEAUTY10"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">نوع الخصم</label>
+          <select class="form-select" id="cp_type">
+            <option value="percent">نسبة مئوية %</option>
+            <option value="fixed">مبلغ ثابت</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">قيمة الخصم</label><input type="number" class="form-input" id="cp_value" min="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">حد أدنى للطلب</label><input type="number" class="form-input" id="cp_minOrder" min="0" value="0"></div>
+        <div class="form-group"><label class="form-label">أقصى عدد استخدامات (0 = مفتوح)</label><input type="number" class="form-input" id="cp_maxUses" min="0" value="0"></div>
+      </div>
+      <div class="form-group"><label class="form-label">تاريخ الانتهاء</label><input type="date" class="form-input" id="cp_expires"></div>
+      <div class="switch-row">
+        <div><b>نشط</b></div>
+        <label class="switch"><input type="checkbox" id="cp_active" checked><span class="sl"></span></label>
+      </div>
+      <button class="btn btn-gold btn-block" onclick="saveCoupon()"><i class="fas fa-floppy-disk"></i> حفظ الكوبون</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TESTIMONIAL MODAL ===== -->
+<div class="modal-back" id="testimonialModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="testimonialModalTitle">إضافة رأي عميل</h3>
+      <button class="modal-x" onclick="closeAdminModal('testimonialModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="t_id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">الاسم <span class="req">*</span></label><input type="text" class="form-input" id="t_name"></div>
+        <div class="form-group"><label class="form-label">المدينة / العيادة</label><input type="text" class="form-input" id="t_city"></div>
+      </div>
+      <div class="form-hint" style="background:#fff7ed;border-right:4px solid #ea580c;padding:10px 12px;border-radius:8px;">
+        <i class="fas fa-shield-halved" style="color:#ea580c;"></i>
+        <b>إجباري:</b> العميل لازم يختار نوع الرأي — رأي <b>عن الموقع</b> أو رأي <b>عن المنتج</b>.<br>
+        كمان لازم يدخل <b>رقم الطلب</b> لمنع تكرار الآراء لنفس العميل.
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">رقم الطلب <span class="req">*</span></label><input type="text" class="form-input" id="t_order_number" placeholder="BL-00001" dir="ltr"></div>
+        <div class="form-group"><label class="form-label">نوع الرأي <span class="req">*</span></label>
+          <select class="form-select" id="t_review_type" style="border:2px solid #ea580c;">
+            <option value="">— اختر نوع الرأي —</option>
+            <option value="site">⭐ رأي عن الموقع (الصفحة الرئيسية)</option>
+            <option value="product">📦 رأي عن المنتج (صفحة المنتج)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" id="t_product_row" style="display:none;">
+        <label class="form-label">المنتج <span class="req">*</span></label>
+        <select class="form-select" id="t_product_id"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">التقييم</label>
+        <select class="form-select" id="t_rating">
+          <option value="5">★★★★★ (5)</option>
+          <option value="4">★★★★ (4)</option>
+          <option value="3">★★★ (3)</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">نص الرأي <span class="req">*</span></label><textarea class="form-textarea" id="t_text"></textarea></div>
+      <div class="switch-row">
+        <div><b>نشط</b></div>
+        <label class="switch"><input type="checkbox" id="t_active" checked><span class="sl"></span></label>
+      </div>
+      <button class="btn btn-gold btn-block" onclick="saveTestimonial()"><i class="fas fa-floppy-disk"></i> حفظ الرأي</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ORDER DETAILS MODAL ===== -->
+<div class="modal-back" id="orderModal">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="orderModalTitle">تفاصيل الطلب</h3>
+      <button class="modal-x" onclick="closeAdminModal('orderModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="orderModalBody"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-init.js"></script>
+<script src="js/data.js"></script>
+<script src="js/store.js"></script>
+<script src="js/payment.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/advanced-features.js"></script>
+<script src="js/advanced-admin.js"></script>
+<script src="js/site-upgrade-v10.js?v=18"></script>
+<script src="js/whatsapp-confirm.js"></script>
+<script src="js/security-hardening.js"></script>
+</body>
+</html>

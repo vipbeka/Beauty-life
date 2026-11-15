@@ -1,0 +1,41 @@
+/* =====================================================================
+   BEAUTY LIFE — Lead Capture Popup (نافذة استقبال الزوار)
+   ===================================================================== */
+.lead-popup-back{
+  position:fixed;inset:0;background:rgba(8,18,38,.68);backdrop-filter:blur(5px);
+  z-index:2000;display:flex;align-items:center;justify-content:center;
+  padding:20px;opacity:0;visibility:hidden;transition:all .3s;
+}
+.lead-popup-back.active{opacity:1;visibility:visible;}
+.lead-popup{
+  position:relative;background:#fff;border-radius:22px;width:100%;max-width:420px;
+  padding:34px 28px 26px;text-align:center;box-shadow:0 30px 70px rgba(8,18,38,.35);
+  transform:translateY(30px) scale(.96);transition:transform .35s cubic-bezier(.2,.9,.25,1);
+}
+.lead-popup-back.active .lead-popup{transform:none;}
+.lead-popup-icon{
+  width:78px;height:78px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;
+  background:#fff;box-shadow:0 6px 18px rgba(11,27,58,.14);border:2px solid var(--gray-200,#e3e9f0);overflow:hidden;
+}
+.lead-popup-icon img{width:100%;height:100%;object-fit:contain;padding:10px;}
+.lead-popup h3{font-size:1.3rem;font-weight:900;color:var(--navy-900,#0b1b3a);margin-bottom:10px;}
+.lead-popup-badge{
+  display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#eef7f1,#e3f3ea);
+  color:#1f8f5b;font-size:.76rem;font-weight:800;padding:6px 14px;border-radius:999px;
+  margin-bottom:14px;border:1px solid #cfe9db;
+}
+.lead-popup-sub{color:var(--gray-500,#6b7787);font-size:.88rem;font-weight:600;margin-bottom:20px;line-height:1.75;}
+.lead-popup-sub strong{color:var(--navy-900,#0b1b3a);font-weight:900;}
+.lead-popup .form-group{text-align:right;}
+.lead-popup .form-input.input-error{border-color:var(--danger,#d63b3b)!important;background:#fdf1f1;}
+.lead-popup .form-input.input-error:focus{box-shadow:0 0 0 4px rgba(214,59,59,.14);}
+.lead-popup-error{
+  display:flex;align-items:center;gap:6px;color:var(--danger,#d63b3b);font-size:.78rem;font-weight:700;
+  margin-top:7px;text-align:right;line-height:1.5;
+}
+.lead-popup-submit{width:100%;margin-top:6px;justify-content:center;}
+.lead-popup-hint{justify-content:center;display:flex;align-items:center;gap:6px;margin-top:16px;}
+
+@media (max-width:480px){
+  .lead-popup{padding:28px 20px 22px;border-radius:18px;}
+}
