@@ -87,6 +87,8 @@ const ERR: Record<string, [number, string]> = {
   bad_method: [422, "طريقة الدفع غير متاحة"],
 };
 export function mapDbError(msg: string): Result {
+  // DB migration not applied yet → 503 so the browser falls back to the legacy checkout (zero downtime).
+  if (/could not find the function|function .* does not exist|schema cache/i.test(msg)) return fail(503, "not_configured");
   const code = (msg.match(/([a-z_]+)(?::|$)/) || [])[1] || "";
   const hit = ERR[code];
   return hit ? fail(hit[0], code, { message: hit[1] }) : fail(500, "checkout_failed", { message: "تعذر إنشاء الطلب — حاول مرة أخرى" });

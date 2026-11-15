@@ -66,6 +66,7 @@ Deno.test("DB errors map to safe Arabic messages", async () => {
   assertEquals(mapDbError("coupon_invalid").body.error, "coupon_invalid");
   assertEquals(mapDbError("rate_limited").status, 429);
   assertEquals(mapDbError("weird internal detail").body.error, "checkout_failed");
+  assertEquals(mapDbError("Could not find the function public.create_checkout_order(p) in the schema cache").status, 503);
   const { d } = mk({}, {}, { rpcError: "out_of_stock:p1" });
   assertEquals((await handle(d, { ...cart, payment_method: "cod" }, null)).status, 409);
 });
