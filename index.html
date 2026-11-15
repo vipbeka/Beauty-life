@@ -16,14 +16,14 @@
 <meta property="og:locale" content="ar_EG">
 <meta property="og:site_name" content="Beauty Life">
 <meta property="og:title" content="Beauty Life | أجهزة طبية للتجميل والعلاج الطبيعي في مصر">
-<meta property="og:description" content="أجهزة طبية أصلية للتجميل والعلاج الطبيعي للعيادات ومراكز التجميل في مصر. ليزر، هايفو، RF، ضمان سنتين، تدريب مجاني، دفع عند الاستلام.">
+<meta property="og:description" content="أجهزة طبية أصلية للتجميل والعلاج الطبيعي للعيادات ومراكز التجميل في مصر. ليزر، هايفو، RF، ضمان حقيقي، تدريب مجاني، دفع عند الاستلام.">
 <meta property="og:url" content="https://beautylife-eg.com/index.html">
 <meta property="og:image" content="https://beautylife-eg.com/assets/company-logo.png">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Beauty Life | أجهزة طبية للتجميل والعلاج الطبيعي في مصر">
-<meta name="twitter:description" content="أجهزة طبية أصلية للتجميل والعلاج الطبيعي للعيادات ومراكز التجميل في مصر. ليزر، هايفو، RF، ضمان سنتين، تدريب مجاني.">
+<meta name="twitter:description" content="أجهزة طبية أصلية للتجميل والعلاج الطبيعي للعيادات ومراكز التجميل في مصر. ليزر، هايفو، RF، ضمان حقيقي، تدريب مجاني.">
 <meta name="twitter:image" content="https://beautylife-eg.com/assets/company-logo.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,7 +46,6 @@
     "image": "https://beautylife-eg.com/assets/company-logo.png",
     "description": "أجهزة طبية أصلية للتجميل والعلاج الطبيعي للعيادات ومراكز التجميل في مصر.",
     "areaServed": "EG",
-    "telephone": "+201000000000",
     "priceRange": "$$",
     "sameAs": []
   }
@@ -60,6 +59,10 @@
     ]
   }
   </script>
+<script>/* Apply the DB theme saved from the last visit before first paint (prevents color flash). */
+(function(){try{var s=JSON.parse(localStorage.getItem("bl_settings_v3")||"null");if(!s)return;var r=document.documentElement.style;
+if(s.themePrimary)r.setProperty("--navy-900",s.themePrimary);if(s.themePrimarySoft||s.themePrimary)r.setProperty("--navy-800",s.themePrimarySoft||s.themePrimary);
+if(s.themeAccent){r.setProperty("--gold-600",s.themeAccent);r.setProperty("--gold-500",s.themeAccent);}}catch(e){}})();</script>
 </head>
 <body>
   <!-- Database loading gate: prevents stale local data from flashing before cloud data arrives. -->
@@ -94,7 +97,7 @@
   </script>
 
 <!-- ===== Top Announcement ===== -->
-<div class="top-announce" id="topAnnounce"><i class="fas fa-truck-fast"></i> <span id="announceText"> 0 </span></div>
+<div class="top-announce" id="topAnnounce"><i class="fas fa-truck-fast"></i> <span id="announceText" class="sk"></span></div>
 
 <!-- ===== Ticker ===== -->
 <div class="ticker" id="tickerBar">
@@ -118,7 +121,7 @@
       <a href="index.html#consult" class="nav-link"><i class="fas fa-stethoscope"></i> استشارة مجانية</a>
     </div>
     <div class="nav-actions">
-      <a href="#" class="nav-phone" id="navPhone"><i class="fas fa-phone-volume"></i> <span>01000000000</span></a>
+      <a href="#" class="nav-phone" id="navPhone"><i class="fas fa-phone-volume"></i> <span></span></a>
       <button type="button" class="icon-btn nav-cart-button" onclick="openCart()" aria-label="فتح سلة التسوق" aria-haspopup="dialog">
         <i class="fas fa-cart-shopping"></i>
         <span class="cart-badge" id="cartBadge" aria-live="polite">0</span>
@@ -133,17 +136,13 @@
   <div class="hero-inner">
     <div class="reveal">
       <div class="hero-badge"><span class="dot"></span> معتمد CE / FDA — أجهزة أصلية 100%</div>
-      <h1 id="heroTitle">أجهزة التجميل والعلاج الطبيعي <span class="gold">الأصلية</span> لعيادتك</h1>
-      <p class="hero-sub" id="heroSubtitle">الحل الأمثل للعيادات ومراكز التجميل — أحدث الأجهزة العالمية مع ضمان حقيقي وتدريب مجاني وصيانة معتمدة في مصر</p>
+      <h1 id="heroTitle" class="sk sk-lg"></h1>
+      <p class="hero-sub sk" id="heroSubtitle"></p>
       <div class="hero-cta">
         <a href="store.html" class="btn btn-gold btn-lg"><i class="fas fa-bag-shopping"></i> تسوق الأجهزة الآن</a>
         <a href="#consult" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,.4);color:#fff;"><i class="fas fa-stethoscope"></i> احجز استشارة مجانية</a>
       </div>
-      <div class="hero-stats">
-        <div class="hstat"><div class="hstat-num">+500</div><div class="hstat-label">عيادة ومركز يثق بنا</div></div>
-        <div class="hstat"><div class="hstat-num">+1200</div><div class="hstat-label">جهاز تم بيعه</div></div>
-        <div class="hstat"><div class="hstat-num">سنتان</div><div class="hstat-label">ضمان حقيقي</div></div>
-      </div>
+      <div class="hero-stats sk-block" aria-busy="true"></div>
     </div>
     <div class="hero-visual reveal reveal-d2">
       <div class="hero-card">
@@ -155,7 +154,7 @@
       </div>
       <div class="hero-float-badge">
         <i class="fas fa-shield-halved"></i>
-        <div><b>ضمان سنتان</b><small>+ صيانة معتمدة</small></div>
+        <div><b class="sk"></b><small></small></div>
       </div>
     </div>
   </div>
@@ -212,14 +211,14 @@
 <section class="section">
   <div class="container">
     <div class="section-head reveal">
-      <div class="section-eyebrow" id="whyEyebrow">ليه بيوتي لايف؟</div>
-      <h2 class="section-title" id="whyTitle">شريكك الموثوق في تجهيز عيادتك</h2>
+      <div class="section-eyebrow sk" id="whyEyebrow"></div>
+      <h2 class="section-title sk" id="whyTitle"></h2>
     </div>
     <div class="why-grid" id="whyGrid">
-      <div class="why-card reveal"><div class="why-icon"><i class="fas fa-certificate"></i></div><h3>أجهزة أصلية معتمدة</h3><p>كل أجهزتنا أصلية 100% ومعتمدة دولياً CE / FDA مع شهادات المنشأ</p></div>
-      <div class="why-card reveal reveal-d1"><div class="why-icon"><i class="fas fa-shield-halved"></i></div><h3>ضمان سنتان حقيقي</h3><p>ضمان شامل سنتان على جميع الأجهزة مع صيانة معتمدة وقطع غيار أصلية</p></div>
-      <div class="why-card reveal reveal-d2"><div class="why-icon"><i class="fas fa-user-graduate"></i></div><h3>تدريب مجاني</h3><p>تدريب عملي كامل على كل جهاز لفريق عيادتك حتى الاحتراف</p></div>
-      <div class="why-card reveal reveal-d3"><div class="why-icon"><i class="fas fa-headset"></i></div><h3>دعم فني مستمر</h3><p>فريق دعم فني متخصص يرد على استفساراتك على مدار الساعة</p></div>
+      <div class="skeleton why-skeleton"></div>
+      <div class="skeleton why-skeleton"></div>
+      <div class="skeleton why-skeleton"></div>
+      <div class="skeleton why-skeleton"></div>
     </div>
   </div>
 </section>
@@ -291,7 +290,7 @@
       <div class="about-content reveal reveal-d1">
         <div class="section-eyebrow" style="justify-content:flex-start;">من نحن</div>
         <h2>بيوتي لايف — خبرة تجهز <span style="color:var(--gold-600);">عيادة المستقبل</span></h2>
-        <p id="aboutText">بيوتي لايف شركة رائدة في توريد الأجهزة الطبية والتجميلية الأصلية للعيادات ومراكز التجميل في مصر والوطن العربي. نوفر أحدث الأجهزة المعتمدة عالمياً مع ضمان حقيقي وتدريب مجاني وصيانة معتمدة.</p>
+        <p id="aboutText" class="sk"></p>
         <div class="about-feats">
           <div class="about-feat"><i class="fas fa-check"></i> توريد لكل محافظات مصر</div>
           <div class="about-feat"><i class="fas fa-check"></i> شحن دولي بالفيزا</div>
@@ -315,7 +314,7 @@
           <div class="logo-tag">Medical Aesthetic</div>
         </div>
       </div>
-      <p id="footerAbout">شريكك الموثوق في تجهيز العيادات ومراكز التجميل بأحدث الأجهزة الطبية الأصلية — ضمان حقيقي، تدريب مجاني، وصيانة معتمدة.</p>
+      <p id="footerAbout" class="sk"></p>
       <div class="socials">
         <a href="#" class="social-btn" id="socialFb" aria-label="فيسبوك"><i class="fab fa-facebook-f"></i></a>
         <a href="#" class="social-btn" id="socialIg" aria-label="انستجرام"><i class="fab fa-instagram"></i></a>
@@ -339,9 +338,9 @@
     <div>
       <h4>تواصل معنا</h4>
       <ul class="footer-contact">
-        <li><i class="fas fa-phone"></i> <span id="footPhone">01000000000</span></li>
-        <li><i class="fas fa-envelope"></i> <span id="footEmail">info@beautylife.com</span></li>
-        <li><i class="fas fa-location-dot"></i> <span id="footAddress">القاهرة، جمهورية مصر العربية</span></li>
+        <li><i class="fas fa-phone"></i> <span id="footPhone" class="sk"></span></li>
+        <li><i class="fas fa-envelope"></i> <span id="footEmail" class="sk"></span></li>
+        <li><i class="fas fa-location-dot"></i> <span id="footAddress" class="sk"></span></li>
         <li><i class="fas fa-clock"></i> يومياً من 10 صباحاً حتى 10 مساءً</li>
       </ul>
     </div>
@@ -526,8 +525,11 @@
   <script src="js/store.js"></script>
   <script src="js/payment.js"></script>
   <script src="js/app.js"></script>
+<script src="js/ssot.js"></script>
   <script src="js/advanced-features.js"></script>
   <script src="js/site-upgrade-v10.js?v=18"></script>
+<script src="js/notify-server.js"></script>
+<script src="js/checkout-v2.js"></script>
   <script src="js/whatsapp-confirm.js"></script>
   <script src="js/lead-capture.js"></script>
 <script src="js/security-hardening.js"></script>

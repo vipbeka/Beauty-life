@@ -107,6 +107,12 @@
                .indexOf(String(email).toLowerCase().trim()) !== -1;
   }
 
+  /* Server-side check first (is_admin RPC); legacy email list only if RPC not deployed. */
+  async function isAdminUser(client, user) {
+    if (window.BLAdminCheck) return await window.BLAdminCheck(client, user);
+    return isAllowedAdmin(user && user.email);
+  }
+
   async function doLogin(e) {
     if (e && e.preventDefault) e.preventDefault();
     hideErr();
@@ -167,7 +173,7 @@
       if (!user) { showErr('لم يتم إرجاع بيانات المستخدم — حاول تاني'); return false; }
 
       // صلاحية الأدمن
-      if (!isAllowedAdmin(user.email)) {
+      if (!(await isAdminUser(client, user))) {
         await client.auth.signOut();
         showErr('الحساب ده مش مصرح له بالدخول للوحة التحكم');
         return false;
@@ -208,7 +214,7 @@
       var client = await waitForSB(8000);
       var s = await client.auth.getSession();
       var u = s && s.data && s.data.session && s.data.session.user;
-      if (u && isAllowedAdmin(u.email)) {
+      if (u && (await isAdminUser(client, u))) {
         sessionStorage.setItem('bl_admin_auth', '1');
         sessionStorage.setItem('bl_admin_email', u.email || '');
         window.location.replace('admin.html');

@@ -15,10 +15,14 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b1b3a'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23d4af5a'>✚</text></svg>">
   <link rel="stylesheet" href="css/advanced-features.css">
   <link rel="stylesheet" href="css/lead-popup.css">
+<script>/* Apply the DB theme saved from the last visit before first paint (prevents color flash). */
+(function(){try{var s=JSON.parse(localStorage.getItem("bl_settings_v3")||"null");if(!s)return;var r=document.documentElement.style;
+if(s.themePrimary)r.setProperty("--navy-900",s.themePrimary);if(s.themePrimarySoft||s.themePrimary)r.setProperty("--navy-800",s.themePrimarySoft||s.themePrimary);
+if(s.themeAccent){r.setProperty("--gold-600",s.themeAccent);r.setProperty("--gold-500",s.themeAccent);}}catch(e){}})();</script>
 </head>
 <body>
 
-<div class="top-announce"><i class="fas fa-truck-fast"></i> <span id="announceText">شحن مجاني للطلبات فوق 5000 جنيه — ضمان سنتين على جميع الأجهزة</span></div>
+<div class="top-announce"><i class="fas fa-truck-fast"></i> <span id="announceText" class="sk"></span></div>
 
 <nav class="navbar" id="navbar">
   <div class="nav-container">
@@ -36,7 +40,7 @@
       <a href="index.html#consult" class="nav-link"><i class="fas fa-stethoscope"></i> استشارة مجانية</a>
     </div>
     <div class="nav-actions">
-      <a href="#" class="nav-phone" id="navPhone"><i class="fas fa-phone-volume"></i> <span>01000000000</span></a>
+      <a href="#" class="nav-phone" id="navPhone"><i class="fas fa-phone-volume"></i> <span></span></a>
       <button type="button" class="icon-btn nav-cart-button" onclick="openCart()" aria-label="فتح سلة التسوق" aria-haspopup="dialog"><i class="fas fa-cart-shopping" aria-hidden="true"></i><span class="cart-badge" id="cartBadge" aria-live="polite">0</span></button>
       <button type="button" class="icon-btn burger" onclick="toggleMenu()" aria-label="فتح القائمة" aria-controls="navLinks" aria-expanded="false"><i class="fas fa-bars" aria-hidden="true"></i></button>
     </div>
@@ -113,8 +117,11 @@
 <script src="js/store.js"></script>
 <script src="js/payment.js"></script>
 <script src="js/app.js"></script>
+<script src="js/ssot.js"></script>
 <script src="js/advanced-features.js"></script>
 <script src="js/site-upgrade-v10.js?v=18"></script>
+<script src="js/notify-server.js"></script>
+<script src="js/checkout-v2.js"></script>
 <script src="js/whatsapp-confirm.js"></script>
 <script src="js/lead-capture.js"></script>
 <script src="js/security-hardening.js"></script>

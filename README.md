@@ -40,5 +40,10 @@ python3 -m http.server 8080
 بعده الزائر لا يقدر يقرأ أو يعدّل الطلبات. لوحة التحكم بعد تسجيل الدخول تفضل شغالة.
 التتبع يبقى لطلب واحد فقط برقم الطلب ورقم الموبايل معًا.
 
-لا تشغّل `supabase-rls-policies.sql` ولا `supabase-storage-fix.sql`.
+سكربتات SQL القديمة الخطيرة (`fix-admin-login.sql`، `supabase-rls-policies.sql`، `supabase-storage-fix.sql`، `supabase-fix-orders.sql`) اتشالت من الفرع ده (موجودة فقط في `backup/pre-security-fix` للرجوع). لا تعيد تشغيلها.
+
+## الأمان والتشغيل (Security hardening)
+- خطوات كل مرحلة في `docs/` (مثلاً `docs/PHASE1_RUNBOOK.md`).
+- مفاتيح Brevo محفوظة في Supabase Edge Function Secrets، مش في جدول `settings`.
+- تغييرات قاعدة البيانات في `supabase/migrations/` (إضافية فقط) والنسخ الاحتياطية في `supabase/backups/`.
 
