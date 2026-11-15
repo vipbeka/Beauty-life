@@ -18,7 +18,12 @@
       "**/*.log",
       "**/README*",
       "**/package*.json",
-      "**/bl-security/**"
+      "**/bl-security/**",
+      "supabase/**",
+      "tests/**",
+      "docs/**",
+      "**/*.sh",
+      "**/*.ts"
     ],
     "headers": [
       {
