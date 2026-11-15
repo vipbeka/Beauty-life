@@ -34,23 +34,42 @@
   function client() { return window.SB && window.SB.client ? window.SB.client : null; }
   function shipType() { var t = $("shipIntlTab"); return t && t.classList.contains("selected") ? "international" : "local"; }
 
-  /* ---- server call: {ok, status, data, unavailable} ---- */
-  async function call(body) {
-    var c = client();
-    if (!c || !c.functions) return { ok: false, unavailable: true };
+  /* ---- server call: {ok, status, data, unavailable, timeout} ----
+     Direct fetch (not supabase-js functions.invoke): avoids waiting on the auth-session lock,
+     which can stall ~10s when another tab (e.g. the admin panel) holds it. */
+  function bearer() {
     try {
-      var res = await c.functions.invoke(FN, { body: body });
-      if (res && res.error) {
-        var ctx = res.error.context, status = ctx && ctx.status, data = null;
-        try { data = ctx && typeof ctx.json === "function" ? await ctx.json() : null; } catch (e) {}
-        // 404 = not deployed, 503 = not configured, no status = request never reached the server
-        return { ok: false, status: status || 0, data: data || {}, unavailable: !status || status === 404 || status === 503 };
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!/^sb-.*-auth-token$/.test(k)) continue;
+        var v = JSON.parse(localStorage.getItem(k) || "null");
+        var tok = v && (v.access_token || (v.currentSession && v.currentSession.access_token));
+        var exp = v && (v.expires_at || (v.currentSession && v.currentSession.expires_at));
+        if (tok && (!exp || exp * 1000 > Date.now() + 30000)) return tok;
       }
-      var d = res ? res.data : null;
-      if (typeof d === "string") { try { d = JSON.parse(d); } catch (e) {} }
+    } catch (e) {}
+    return window.SB.anonKey;
+  }
+  async function call(body, timeoutMs) {
+    if (!window.SB || !window.SB.url || !window.SB.anonKey) return { ok: false, unavailable: true, data: {} };
+    var ctl = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = ctl ? setTimeout(function () { ctl.abort(); }, timeoutMs || 25000) : null;
+    try {
+      var r = await fetch(String(window.SB.url).replace(/\/+$/, "") + "/functions/v1/" + FN, {
+        method: "POST",
+        headers: { "content-type": "application/json", apikey: window.SB.anonKey, authorization: "Bearer " + bearer() },
+        body: JSON.stringify(body),
+        signal: ctl ? ctl.signal : undefined
+      });
+      var d = {};
+      try { d = await r.json(); } catch (e) {}
+      if (!r.ok) return { ok: false, status: r.status, data: d || {}, unavailable: r.status === 404 || r.status === 503 };
       return { ok: !!(d && d.ok), status: 200, data: d || {} };
     } catch (e) {
-      return { ok: false, unavailable: true, data: {} };
+      var timedOut = e && e.name === "AbortError";
+      return { ok: false, status: 0, data: {}, timeout: timedOut, unavailable: !timedOut };
+    } finally {
+      if (timer) clearTimeout(timer);
     }
   }
 
@@ -87,15 +106,19 @@
     });
   }
 
-  async function loadConfig() {
-    if (state.unavailable) return;
+  var inflight = {};
+  function loadConfig() {
+    if (state.unavailable) return Promise.resolve();
     var ship = shipType();
+    if (inflight[ship]) return inflight[ship];
     var phone = ($("co_phone") && $("co_phone").value || "").trim();
-    var r = await call({ action: "config", ship_type: ship, customer: { phone: phone } });
-    if (r.unavailable) { state.unavailable = true; return; }
-    if (!r.ok) return;
-    state.cfg = r.data; state.ship = ship;
-    render();
+    inflight[ship] = call({ action: "config", ship_type: ship, customer: { phone: phone } }, 10000).then(function (r) {
+      if (r.unavailable) { state.unavailable = true; return; }
+      if (!r.ok) return;
+      state.cfg = r.data; state.ship = ship;
+      render();
+    }).finally(function () { delete inflight[ship]; });
+    return inflight[ship];
   }
 
   /* ---- submit ---- */
@@ -160,13 +183,20 @@
 
     state.busy = true;
     setBtn(true, '<i class="fas fa-spinner fa-spin"></i> جارٍ تأكيد الطلب...');
+    var slow = setTimeout(function () { setBtn(true, '<i class="fas fa-spinner fa-spin"></i> لحظات… جارٍ تأكيد طلبك'); }, 4000);
     var r = await call({
       action: "create", ship_type: ship, payment_method: state.method, coupon_code: appliedCoupon(),
       governorate: ship === "local" ? region : "", country: ship === "international" ? region : "",
       items: cart.map(function (i) { return { product_id: i.product_id || i.id, qty: Number(i.qty) || 1 }; }),
       customer: { name: v("co_name"), phone: v("co_phone"), email: v("co_email"), address: v("co_address"), city: v("co_city"), notes: v("co_notes") }
-    });
+    }, 30000);
+    clearTimeout(slow);
     state.busy = false;
+
+    if (r.timeout) {
+      setBtn(false);
+      return toast("الاتصال بطيء — لو ظهر لك رقم طلب أو وصلك إيميل فالطلب اتسجل. لو لأ حاول تاني أو كلمنا واتساب", "error");
+    }
 
     if (r.unavailable && (r.status === 404 || r.status === 503 || !r.status)) {
       state.unavailable = true;
@@ -210,7 +240,14 @@
     });
     return true;
   }
-  function boot() { install(); setTimeout(install, 800); setTimeout(install, 2500); }
+  function boot() {
+    install(); setTimeout(install, 800); setTimeout(install, 2500);
+    /* Warm the server function + cache CORS preflight so the real order is instant. */
+    if ($("checkoutModal") && !state.warmed) {
+      state.warmed = true;
+      setTimeout(function () { if (window.SB && window.SB.url) loadConfig(); }, 2500);
+    }
+  }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
   window.addEventListener("bl:ready", boot);
   window.BLCheckoutV2 = { state: state, reload: loadConfig };

@@ -20,6 +20,15 @@ function stub(fn) {
     auth:{getSession:async()=>({data:{session:null}}),signOut:async()=>({})},channel(){return ch;},removeChannel(){},storage:{from(){return{};}},
     functions:{invoke:async(name,o)=>{window.__invokes.push({name,body:o&&o.body});return FN(name,(o&&o.body)||{});}}};}};})();`;
 }
+const NODE_FNS = {
+  off: (b) => b.action === 'config' ? [200, { ok: true, mode: 'off', methods: b.ship_type === 'local' ? ['cod'] : [] }] : [200, { ok: true, kind: 'cod', order_number: 'BL-777777-SRV', total: 1150 }],
+  notdeployed: () => [404, { error: 'not found' }],
+  sandbox: (b, base) => b.action === 'config' ? [200, { ok: true, mode: 'sandbox', sandbox_access: true, methods: ['cod', 'card', 'wallet', 'valu', 'instapay'] }]
+    : b.payment_method === 'card' ? [200, { ok: true, kind: 'redirect', order_number: 'BL-1', redirect_url: base + '/__gateway?cs=1' }]
+    : b.payment_method === 'instapay' ? [200, { ok: true, kind: 'transfer', order_number: 'BL-2', total: 1150, reference: 'BL-2', instapay: 'beauty<b>@instapay' }]
+    : [200, { ok: true, kind: 'cod', order_number: 'BL-3', total: 1150 }],
+  error409: (b) => b.action === 'config' ? [200, { ok: true, mode: 'off', methods: ['cod'] }] : [409, { ok: false, error: 'product_unavailable', message: 'أحد المنتجات لم يعد متاحًا — حدّث السلة' }],
+};
 const http404 = `{data:null,error:{message:'nf',context:{status:404,json:async()=>({})}}}`;
 const FNS = {
   off: `(name,b)=>{ if(name!=='create-checkout') return {data:{ok:true},error:null};
@@ -44,9 +53,17 @@ const srv = http.createServer((req, res) => {
 });
 
 async function page(browser, base, url, fn) {
-  const p = await browser.newPage(); p.__errors = [];
+  const p = await browser.newPage(); p.__errors = []; p.__calls = [];
   p.on('pageerror', e => p.__errors.push(e.message));
   await p.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+  const key = Object.keys(FNS).find(k => FNS[k] === fn);
+  await p.route(/\/functions\/v1\/create-checkout/, r => {
+    const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'POST, OPTIONS' };
+    if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 200, headers: cors, body: 'ok' });
+    const b = JSON.parse(r.request().postData() || '{}'); p.__calls.push(b);
+    const [st, body] = NODE_FNS[key](b, base);
+    r.fulfill({ status: st, headers: { ...cors, 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  });
   await p.route(/supabase-js/, r => r.fulfill({ contentType: 'application/javascript', body: stub(fn) }));
   await p.addInitScript(() => { try { localStorage.setItem('bl_lead_captured', '1'); localStorage.setItem('bl_cart_v3', JSON.stringify([{ id: 'p1', product_id: 'p1', name: 'OLD', price: 1, qty: 2 }])); } catch (e) {} });
   await p.goto(base + url);
@@ -76,8 +93,10 @@ async function checkout(p, method) {
   await p.evaluate(() => submitOrder()); await p.waitForTimeout(800);
   out.off_result = await p.evaluate(() => ({ step2: !document.getElementById('checkoutStep2').classList.contains('hidden'),
     orderNumber: document.getElementById('orderNumDisplay').textContent, msg: document.getElementById('orderSuccessMsg').textContent,
-    createBody: (window.__invokes.find(i => i.body && i.body.action === 'create') || {}).body,
+    createBody: null,
     legacyOrderInsert: window.__inserts.some(i => i.table === 'orders'), cartLeft: BL.getCart().length }));
+  out.off_result.createBody = p.__calls.find(c => c.action === 'create');
+  out.off_configCalls = p.__calls.filter(c => c.action === 'config').length;
   out.off_errors = p.__errors; await p.close();
 
   p = await page(browser, base, '/store.html', FNS.notdeployed);

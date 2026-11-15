@@ -180,6 +180,7 @@
           t,
         );
       }
+      startRealtimeIfAdmin();
     } else {
       /* Offline (SDK blocked/failed): keep the cached real data as-is — no demo seeding,
          nothing written back, so the next online visit is not polluted. */
@@ -324,6 +325,7 @@
         } catch (t) {}
         O = null;
       }
+      const gen = ++rtGen;
       try {
         O = l()
           .channel("bl-live-v9", { config: { broadcast: { self: !1 } } })
@@ -391,8 +393,9 @@
             },
           )
           .subscribe(function (t) {
+            if (gen !== rtGen) return; // event from a replaced channel
             "SUBSCRIBED" === t
-              ? ((I = !0), _("bl:realtime-connected"))
+              ? ((I = !0), (rtDelay = 3e3), _("bl:realtime-connected"))
               : ("CHANNEL_ERROR" !== t &&
                   "TIMED_OUT" !== t &&
                   "CLOSED" !== t) ||
@@ -403,7 +406,10 @@
       }
     }
   }
+  let rtDelay = 3e3,
+    rtGen = 0;
   function U() {
+    /* Reconnect with backoff (3s → 60s) instead of re-downloading every table every 3s. */
     v ||
       (v = setTimeout(function () {
         (v = null),
@@ -412,7 +418,12 @@
             N()
               .then(D)
               .catch(function () {});
-      }, 3e3));
+      }, rtDelay),
+      (rtDelay = Math.min(6e4, 2 * rtDelay)));
+  }
+  /* Live updates are only needed in the admin panel (new orders, stock changes). */
+  function startRealtimeIfAdmin() {
+    document.querySelector(".admin-shell") && l() && !O && D();
   }
   function x(t, e, n, r) {
     if (!n) return;

@@ -16,7 +16,7 @@ function cors(origin: string | null) {
   const okOrigin = origin && (ORIGINS.concat(extra).includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
     /^https:\/\/beautylife1-890ae--[a-z0-9-]+\.web\.app$/.test(origin));
   return { "Access-Control-Allow-Origin": okOrigin ? origin! : ORIGINS[0], "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS", "Vary": "Origin" };
+    "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Max-Age": "86400", "Vary": "Origin" };
 }
 
 async function postJson(url: string, headers: Record<string, string>, body: unknown) {
