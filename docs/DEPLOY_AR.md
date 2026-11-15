@@ -18,7 +18,7 @@
 
 ## الملفات المطلوب رفعها على الاستضافة (Firebase)
 
-**ملفات معدّلة (16):**
+**ملفات معدّلة (15):**
 `index.html` · `store.html` · `track.html` · `admin.html` · `admin-login.html` · `payment-callback.html` · `firebase.json` · `README.md` · `css/main.css` · `js/admin.js` · `js/app.js` · `js/data.js` · `js/store.js` · `js/site-upgrade-v10.js` · `js/whatsapp-confirm.js`
 
 **ملفات جديدة (3):**
